@@ -1,5 +1,5 @@
 import pytest
-from print_ext.line import Line, justify_v, SMark as SM, style_cvar
+from print_ext.line import Line, Just, justify_v, SMark as SM, style_cvar
 from print_ext.text import Text
 from print_ext.span import Span
 from print_ext.context import Context
@@ -178,6 +178,25 @@ def test_line_loop_deep():
     assert(b.styled() == ('babc', [SM('2',0,4), SM('1',0,4), SM('2',1,4), SM('1',2,3)]))
 
 
+def test_just_defaults():
+    j = Just()
+    assert((j.h, j.v) == ('',''))
+    j = Just(defaults='|-')
+    assert((j.h, j.v) == ('|','-'))
+    j = Just('_', defaults='|-')
+    assert((j.h, j.v) == ('|','_'))
+    j = Just('<', defaults='|-')
+    assert((j.h, j.v) == ('<','-'))
+
+
+def test_just_pad():
+    j = Just('|-')
+    assert(j.pad_v(10) == 5)
+    assert(j.pad_h(10) == 5)
+    assert(j.pad_v(9) == 4)
+    assert(j.pad_h(9) == 4)
+
+
 
 def test_line_wrap():
     def _f(s, w=0, h=0, just='|-', wmf=5, **kwargs):
@@ -351,9 +370,9 @@ def test_subtyles():
 
 def test_justify_v():
     rows = [Line('a'), Line('b'), Line('c'), Line('d')]
-    r = justify_v(rows, 4, '-', Line('xxxx'))
+    r = justify_v(rows, 4, Just('-'), Line('xxxx'))
     assert('--'.join(map(str,r)) == 'a--b--c--d')
-    r = justify_v(rows, 6, '-', Line('xxx'))
+    r = justify_v(rows, 6, Just('-'), Line('xxx'))
     assert('--'.join(map(str,r)) == 'xxx--a--b--c--d--xxx')
     with pytest.raises(ValueError):
         justify_v(rows, 3, '-',Line())

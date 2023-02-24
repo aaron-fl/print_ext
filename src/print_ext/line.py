@@ -1,4 +1,5 @@
 import copy, sys
+from math import ceil
 from functools import reduce
 from collections import namedtuple
 from .span import Span
@@ -7,26 +8,47 @@ from .rich import Rich
 from tests.testutil import ostr, context_info, ostr_ctx, debug_dump
 
 class Just():
-    __slots__ = ('hv',)
-    def __init__(self, hv):
-        if isinstance(hv, str):
+    __slots__ = ('hv','h','v')
+
+    def __init__(self, hv=None, defaults=''):
+        if not hv:
+            hv = ('','')
+        elif isinstance(hv, str):
             if len(hv) == 1:
-                self.hv = ('',hv) if hv in '_-~^' else (hv,'')
+                hv = ('',hv) if hv in '_-~^' else (hv,'')
             else:
-                self.hv = tuple(hv)
-        else:
-            self.hv = hv.hv if isinstance(hv, Just) else (hv or ('',''))
-        if self.hv[0] not in '<|:>': raise ValueError(f"Invalid horizontal justification character '{self.hv[0]}'")
-        if self.hv[1] not in '_-~^': raise ValueError(f"Invalid vertical justification character '{self.hv[1]}'")
+                hv = tuple(hv)
+        elif isinstance(hv, Just):
+            hv = (hv.h, hv.v)
+        if defaults:
+            defaults = Just(defaults)
+            hv = (hv[0] or defaults.h, hv[1] or defaults.v)
+        self.h, self.v = hv
+        if self.h not in '<|:>': raise ValueError(f"Invalid horizontal justification character '{self.h}'")
+        if self.v not in '_-~^': raise ValueError(f"Invalid vertical justification character '{self.v}'")
+        
 
-    def h(self, default='<'):
-        return self.hv[0] or default
 
-    def v(self, default='^'):
-        return self.hv[1] or default
+    def pad_v(self, h):
+        if self.v == '_': return h
+        elif self.v == '-': return h//2
+        elif self.v == '~': return ceil(h/2)
+        return 0
+
+
+    def pad_h(self, w):
+        if self.h == '>': return w
+        elif self.h == '|': return w//2
+        elif self.h == ':': return ceil(w/2)
+        return 0
+        
+
+    def __str__(self):
+        return self.h+self.v
+
 
     def __repr__(self):
-        return f'Just({self.hv[0]+self.hv[1]!r})'
+        return f'Just({self.h+self.v!r})'
 
 
 
@@ -35,9 +57,7 @@ class JustCVar(CVar):
         return Just(sval)
 
     def merge(self, val, pval):
-        val = Just(val)
-        pval = Just(pval)
-        return Just((val.h(pval.hv[0]), val.v(pval.hv[1])))
+        return Just(val, pval)
 
 
 
@@ -144,12 +164,10 @@ class Line(Rich):
         ''' Add padding so that we are correctly justified for the given `width`
         '''
         if width == 0: return self
-        j = justify_h or Just(self['justify']).h()
         pad = width - self.width
-        if pad < 0: raise ValueError(f"This string width ({self.width}) is greater than the given justification width ({width})")
-        padl = 0 if j == '<' else pad if j == '>' else pad//2
-        padr,padl = (padl, pad-padl) if j == ':' else (pad-padl, padl)
-        return self.insert(0, ' '*padl).insert(-1, ' '*padr)
+        if pad < 0: raise ValueError(f"This string width ({self.width}) is greater than the given justification width ({width})")        
+        padl = Just(justify_h, Just(self['justify'], '<')).pad_h(pad)
+        return self.insert(0, ' '*padl).insert(-1, ' '*(pad-padl))
 
 
 
@@ -252,7 +270,7 @@ class Line(Rich):
             if e.width > w: e = Line(style='dem', parent=self).insert(0, f"{vbar}{n}")
             if e.width > w: e = Line(style='dem', parent=self).insert(0, f"{vbar}")
             rows = rows[:keep-keep//2] + [e.justify(w, '|')] + rows[len(rows)-keep//2:]
-        return rows if not h else justify_v(rows, h, Just(self['justify']).v(), Line(parent=self).insert(0,' '*w))
+        return rows if not h else justify_v(rows, h, Just(self['justify'], '^'), Line(parent=self).insert(0,' '*w))
 
 
     def _flatten_no_wrap(self, w):
@@ -298,6 +316,5 @@ class Line(Rich):
 def justify_v(rows, h, j, line):
     pad = h - len(rows)
     if pad < 0: raise ValueError(f"{len(rows)} is greater than the given justification height ({h})")
-    padt = 0 if j == '^' else pad if j == '_' else pad//2
-    padb, padt = (padt, pad-padt) if j == '~' else (pad-padt, padt)
-    return [line.clone(parent=line.parent, **line.ctx_local) for _ in range(padt)] + rows + [line.clone(parent=line.parent, **line.ctx_local) for _ in range(padb)]
+    padt = j.pad_v(pad)
+    return [line.clone(parent=line.parent, **line.ctx_local) for _ in range(padt)] + rows + [line.clone(parent=line.parent, **line.ctx_local) for _ in range(pad-padt)]
