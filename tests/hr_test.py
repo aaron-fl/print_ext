@@ -18,7 +18,7 @@ def test_hr_hello():
 
 
 def test_hello_pretty():
-    o, p = _printer(width=10)
+    o, p = _printer(width=10, ascii=True)
     p.hr('hi')
     assert(o.getvalue() == '---[hi]---\n')
 

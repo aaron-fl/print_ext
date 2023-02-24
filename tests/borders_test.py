@@ -44,7 +44,7 @@ def test_borderdfn_fld_select():
 
 
 def test_border_pretty():
-    o,p = _printer(color=False)
+    o,p = _printer(color=False, ascii=True)
     f = Flex('hi\vthere\vbob')
     assert((f.width, f.height) == (5,3))
     p(Borders('hi\vthere\vbob', border=BorderDfn('-',m='01'), style='1'))
