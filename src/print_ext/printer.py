@@ -71,7 +71,7 @@ class Printer(Context):
             except: width = 78
         kwargs['width_max'] = width
         if 'ascii' not in kwargs:
-            kwargs['ascii'] = (locale.getdefaultlocale()[1].lower() == 'utf-8')
+            kwargs['ascii'] = (locale.getdefaultlocale()[1].lower() != 'utf-8')
         self.color = isatty if color == None else color
         super().__init__(**kwargs)
         self.blank = 0
