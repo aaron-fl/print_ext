@@ -43,11 +43,28 @@ def test_ctx_CallableVar():
 
 
 
-@pytest.mark.xfail
 def test_ctx_parent_loops():
     ''' Don't create loops
     '''
-    assert(False)
+    c = Cat(pi=3.1)
+    d = Dog(parent=c)
+    a = Animal(parent=d, a=44, q=5)
+    assert(c['a'] == 4)
+    assert(c['q'] == None)
+    assert(a['pi'] == 3.1) 
+    idc = id(c)
+    idc2 = c.ctx_parent(a)
+    assert(id(idc2) != idc)
+    assert(idc2['a'] == 4)
+    assert(idc2['q'] == 5)
+    
+    cc = Cat(pi=4)
+    dd = Dog(parent=cc)
+    assert(dd['q'] == None)
+    assert(dd['pi'] == 4)
+    ddd = dd.ctx_parent(a)
+    assert(ddd['q'] == 5)
+    assert(ddd['pi'] == 4)
 
 
 

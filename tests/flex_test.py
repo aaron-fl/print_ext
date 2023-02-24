@@ -29,6 +29,13 @@ def test_flex_in_flex():
     assert(lines == ['abcdbobfoo', '    cobbar'])
 
 
+def test_flex_loops():
+    g = Flex('hi')
+    i = Flex(g,g)
+    lines = [str(x) for x in i.flatten()]
+    assert(lines == ['hihi'])
+
+
 
 def test_flex_fox():
     fox = Flex(style='1', text_wrap=True, wrap_mark_from=10, justify='>_').tab(wx=5, style='2')('\b3 the',' quick\vbrown\t', 'fox','\t',Fill('y'))

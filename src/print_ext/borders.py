@@ -7,10 +7,12 @@ from .border_dfn import BorderDfn
 
 class BorderCVar(CVar):
     def canon(self, val):
+        if isinstance(val, tuple): return BorderDfn(*val)
+        if isinstance(val, dict): return BorderDfn(**val)
         return BorderDfn(val)
 
     def merge(self, val, pval):
-        return val.merge_from(pval)
+        return pval.update(val)
 
 
 Context.define(StyleCVar('border_style'))
@@ -19,7 +21,7 @@ Context.define(BorderCVar('border'))
 
 
 class Borders(Flex):
-    ctx_defaults = Context.defaults(border='blank', border_style='dem')
+    ctx_defaults = Context.defaults(border=(1,'-'), border_style='dem')
 
     @property
     def width(self):
@@ -46,7 +48,7 @@ class Borders(Flex):
         lhs = bdr.side_chars(len(flat), bdr.l[5:] if ascii else bdr.l) if bdr.sides[2] else ''
         rhs = bdr.side_chars(len(flat), bdr.r[5:] if ascii else bdr.r) if bdr.sides[3] else ''
         wb = w or (flat[0].width if flat else 0) + int(bdr.sides[2]) + int(bdr.sides[3])
-        print(f'borders flatten {w}x{h}  bdwh:{bw}x{bh}  {child_size}  ->  bw:{wb} {lhs!r} {rhs!r}')
+        #print(f'borders flatten {w}x{h}  bdwh:{bw}x{bh}  {child_size}  ->  bw:{wb} {lhs!r} {rhs!r}')
         if bdrh and (txt:=bdr.top_line(wb, ascii)):
             yield Line(parent=self, style=style).insert(0, txt)
         if not lhs and not rhs:

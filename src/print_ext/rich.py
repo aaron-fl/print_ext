@@ -162,6 +162,10 @@ class Rich(Context):
 
 
     def rich_append(self, el, ctx):
+        try:
+            el = el.ctx_parent(self)
+        except AttributeError:
+            pass # el is not a Context
         self.rich_stream.append((el,ctx))
         
 

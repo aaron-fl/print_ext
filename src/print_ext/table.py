@@ -2,26 +2,47 @@ import re
 from math import ceil
 from functools import reduce
 from .flex import Flex
+from .line import StyleCVar
 from .context import Context, CtxProxy, CVar
 from .text import Text
 from .size import Size
+from .borders import Borders, BorderDfn
 from tests.testutil import debug_dump
-Context.define(CVar('cls'))
 
-class CellRange():
-    RE = re.compile(r'(R(-?\d+)?(%(\d+))?)?(C(-?\d+)?(%(\d+))?)?$')
+Context.define(CVar('cls'))
+Context.define(CVar('tmpl'))
+
+
+class CellDfn():
+    RE = re.compile(r'(r(-?\d+)?(%(\d+))?)?(c(-?\d+)?(%(\d+))?)?$')
 
     def __init__(self, cstr, **kwargs):
         self.kwargs = kwargs
-        m = CellRange.RE.match(cstr)
+        cstr = cstr.lower()
+        if cstr == 'all': m = (None, True, 0, True, 1, True, 0, True, 1)
+        else: m = CellDfn.RE.match(cstr)
         if not m: raise ValueError(f"Invalid Cell Range {cstr!r}")
         self.r, self.rmod = (int(m[2] or 0), int(m[4]) if m[3] else 0) if m[1] else (0, 1)
         self.c, self.cmod = (int(m[6] or 0), int(m[8]) if m[7] else 0) if m[5] else (0, 1)
 
+
+    def __hash__(self):
+        return hash(self.vals())
+
+
+    def __eq__(self, other):
+        return self.vals() == (other and other.vals())
+
+
+    def vals(self):
+        v = self.r, self.rmod, self.c, self.cmod
+        return  v + tuple((k,self.kwargs[k]) for k in sorted(self.kwargs))
+    
     
     def ctx_merge(self, ctx, r, c, n_rows, n_cols):
         if not self.matches(r, c, n_rows, n_cols): return ctx
         return Context(parent=ctx, **self.kwargs)
+
 
 
     def matches(self, r, c, n_rows, n_cols):
@@ -44,7 +65,7 @@ class CellRange():
 
 
     def __repr__(self):
-        return f'R{self.r}%{self.rmod}C{self.c}%{self.cmod}'
+        return f'R{self.r}%{self.rmod}C{self.c}%{self.cmod} {self.kwargs}'
 
 
 
@@ -65,6 +86,18 @@ class ColDfn():
 
 
 class Table(Flex):
+
+    ctx_defaults = Context.defaults(tmpl='pad,em')
+    
+    _tmpls = {}
+
+    @staticmethod
+    def define(style, *cells):
+        if style in Table._tmpls and cells != Table._tmpls[style]:
+            raise ValueError(f"Table style {style!r} is already defined:\nExisting: {Table._tmpls[style]}\nTrying to set: {cells}")
+        Table._tmpls[style] = cells
+
+
     def __init__(self, *args, **kwargs):
         self.cols = [ColDfn(a) for a in args]
         self._cell_ctx = []
@@ -78,6 +111,18 @@ class Table(Flex):
     def __len__(self):
         return len(self.cells)
 
+
+    @property
+    def width(self):
+        flat = list(Table.flatten(self))
+        return flat[0].width if flat else 0
+
+
+    @property
+    def height(self):
+        flat = list(Table.flatten(self))
+        return len(flat)
+        
 
     @property
     def cells(self):
@@ -95,7 +140,17 @@ class Table(Flex):
 
 
     def _cell_ctx_reduce(self, r, c, n_rows, n_cols):
-        return reduce(lambda a,b: b.ctx_merge(a, r, c, n_rows, n_cols), self._cell_ctx, Context())
+        ctx = reduce(lambda a,b: b.ctx_merge(a, r, c, n_rows, n_cols), self._cell_ctx, Context())
+        tmpl = [x.strip() for x in (ctx['tmpl'] or self['tmpl']).split(',') if x.strip()]
+        while '0' in tmpl: tmpl = tmpl[tmpl.index('0')+1:]
+        tmpls = [a for t in tmpl for a in Table._tmpls[t]]
+        if tmpls:
+            ctx_pre = reduce(lambda a,b: b.ctx_merge(a, r, c, n_rows, n_cols), tmpls, Context())
+            pctx = ctx
+            while pctx.parent != None:
+                pctx = pctx.parent
+            pctx.parent = ctx_pre
+        return ctx
 
 
     def _cell_instance(self, cell, ctx):
@@ -130,7 +185,7 @@ class Table(Flex):
         # Calculate sizes
         sizes = [Size(nom=noms[i], min=self.cols[i]['min'], max=self.cols[i]['max'], rate=self.cols[i]['rate']) for i in range(n_cols)]
         if len(sizes) != n_cols: raise NotImplementedError()
-        print(f" FLatten {len(cells)} else into table {n_rows}x{n_cols} => {sizes} ")
+        #print(f"table flatten {len(cells)} els into table {n_rows}x{n_cols} => {sizes}  :{w}x{h}")
         def elide_cols(ecells):
             return Size(nom=1, rate=0, user=ecells)
         cols = Size.resize(sizes, w, wrap=False, elide=elide_cols)[0]
@@ -148,6 +203,34 @@ class Table(Flex):
 
 
     def cell(self, rstr, **kwargs):
-        self._cell_ctx.append(CellRange(rstr, **kwargs))
+        self._cell_ctx.append(CellDfn(rstr, **kwargs))
 
-    
+
+
+
+Table.define('em', CellDfn('R0', style='em'))
+Table.define('pad',
+    CellDfn('ALL', cls=Borders, border=(' ', 'm:0010')),
+    CellDfn('C0', border='m:\n\n0\n'),
+)
+Table.define('sep',
+    CellDfn('R0', cls=Borders, border=('b:─-', 'c:\n\n──\n\n--', 'm:\n1\n\n')),
+    CellDfn('R0C0', border=('c:\n\n├\n\n\n|\n')),
+    CellDfn('R0C-1', border=('c:\n\n\n┤\n\n\n|')),
+)
+Table.define('grid',
+    CellDfn('ALL', cls=Borders, border=('-','c:┼┤┴┘++++','m:1010')),
+    CellDfn('R0', border=('c:┬┐\n\n++\n\n')),
+    CellDfn('C0', border=('c:├\n└\n+\n+\n')),
+    CellDfn('C-1', border=('m:1011')),
+    CellDfn('R-1', border=('m:1110')),
+    CellDfn('R-1C-1', border=('m:1')),
+    CellDfn('R0C0', border=('c:┌\n\n\n+\n\n\n')),
+)
+Table.define('dbl',
+    CellDfn('R-1', cls=Borders, border=('c:\n\n╧╝\n\n##', 'b:═#', 'm:\n1\n\n')),
+    CellDfn('C0', cls=Borders, border=('c:╟╤╚╧####', 'l:║#', 'm:\n\n1\n')),
+    CellDfn('C-1', cls=Borders, border=('c:\n╢╧╝\n###','r:║#','m:\n\n\n1')),
+    CellDfn('R0', cls=Borders, border=('c:╤╗\n\n##\n\n', 't:═#', 'm:1\n\n\n')),
+    CellDfn('R0C0', border=('c:╔\n\n\n#\n\n\n')),
+)

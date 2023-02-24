@@ -162,9 +162,26 @@ def test_line_no_wrap():
     assert(_f('test', w=3) == ('t~t', [SM('dem',1,2)]))
 
 
+
+def test_line_loop():
+    l = Line('hi',style='1')
+    l(l,style='2')
+    assert(l.styled() == ('hihi',[SM('1',0,4), SM('2',2,4), SM('1',2,4)]))
+
+
+def test_line_loop_deep():
+    b = Line('b', style='1')
+    abc = Line('a', b, 'c', style='2')
+    assert(abc.styled() == ('abc', [SM('2',0,3), SM('1',1,2)]))
+    b(abc)
+    print('\n'.join(debug_dump(b)))
+    assert(b.styled() == ('babc', [SM('2',0,4), SM('1',0,4), SM('2',1,4), SM('1',2,3)]))
+
+
+
 def test_line_wrap():
     def _f(s, w=0, h=0, just='|-', wmf=5, **kwargs):
-        return [r.styled() for r in  Line(s, justify=just, ascii_only='y', text_wrap=True, wrap_mark_from=wmf, **kwargs).flatten(w, h)]
+        return [r.styled() for r in  Line(s, justify=just, ascii='y', text_wrap=True, wrap_mark_from=wmf, **kwargs).flatten(w, h)]
     assert(_f('abcdefghij', w=13) == [(' abcdefghij  ',[])])
     assert(_f('abcdefghij', w=3) == [('abc',[]), ('def',[]), ('ghi',[]), ('j  ',[])])
     assert(_f('abcdefghij', w=6) == [('abcdef',[]), ('\\ ghij',[SM('dem',0,2)])])

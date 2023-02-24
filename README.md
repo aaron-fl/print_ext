@@ -1,5 +1,11 @@
 # print-ext
 
+Extensions to the print function.
+
+# About
+
+The standard python print() function is too simple.  It barely provides any functionality more than just using sys.stdout.write().  This library aims to boost the functionaly/complexity ratio of the print() function.
+
 This is a set of objects for laying out and styling fixed-width text.  The primary use-case is for pretty-printing text to the console to improve console application user interfaces.  But, it can work equally well for any other stream, such as files.
 
 The goal is to be simple to use the majority of the time while still allowing complex behavior.

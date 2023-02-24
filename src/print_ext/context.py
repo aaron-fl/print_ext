@@ -1,5 +1,5 @@
 from .context_cvar import ctx_vars, CallableVar, ObjectAttr, CVar, IntCVar, FloatCVar, BoolCVar, EnumCVar
-
+from tests.testutil import ostr
 
 class Context(object):
     ''' 
@@ -93,15 +93,25 @@ class Context(object):
         yield from []
 
 
+    def ctx_contains(self, other):
+        ctx = self
+        while ctx != None:
+            if id(ctx) == id(other): return True
+            ctx = ctx.parent
+        return False
+
+
     def ctx_parent(self, parent):
-        if self.parent:
+        if parent.ctx_contains(self) or self.parent != None and id(self.parent) != id(parent):
             return self.clone(parent=parent, **self.ctx_flatten())
         self.parent = parent
         return self
 
 
     def clone(self, *args, **kwargs):
-        raise NotImplementedError()
+        ''' Perform a deep clone of this object.
+        '''
+        return self.__class__(*args, **kwargs)
 
 
     def ctx_lookup(self, cvar, parent=None):
@@ -128,10 +138,6 @@ class Context(object):
 
     def ctx_lookup_self(self, cvar):
         return (self._ctx_lookup_class(cvar) or (None,None))[0], self.ctx_local.get(cvar.names[0], None)
-
-
-    #def ctx_local(self, key=None, default=None):
-    #    return self.ctx_local.get(key, default) if key else self.ctx_local
 
 
     def _ctx_lookup_merge(self, cvar):

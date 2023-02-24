@@ -84,7 +84,7 @@ def test_color():
 
 def test_printer_default_styles():
     o,p = _printer(color=True)
-    p('the ', '\bem Quick\vbrown', ' fox')
+    p('the ', '\bem-_ Quick\vbrown', ' fox')
     print(o.getvalue())
     assert(repr(o.getvalue()) == repr('the \x1b[1;4mQuick\x1b[0m\n\x1b[1;4mbrown\x1b[0m fox\n'))
     o,p = _printer()

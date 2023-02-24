@@ -4,9 +4,9 @@ from .line import Line
 
 class HR(Borders):
 
-    bdr = BorderDfn(m='xx||', l='│││┤┤[[[[[', r='│││├├]]]]]', t='─-')
+    default_bdr = BorderDfn(m='01', l='│││┤┤[[[[[', r='│││├├]]]]]', t='─-')
 
-    ctx_defaults = Context.defaults(border=bdr)
+    ctx_defaults = Context.defaults(border=default_bdr)
     
     @property
     def width(self):

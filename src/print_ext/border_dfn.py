@@ -1,3 +1,4 @@
+from functools import reduce
 
 class BorderDfn():
     ''' Define the border by single characters
@@ -9,62 +10,100 @@ class BorderDfn():
     left/right [l/r] : X | TXB | LMXR | TMXB1
 
     '''
+    fields = 'clrtbm'
+    fld_size = dict(c=8,l=10,r=10,t=10,b=10,m=4)
+    dfns = {}
 
     @staticmethod
-    def canon(**kwargs):
-        kwargs['c'] = str(kwargs.get('c', '\n'*8))
-        kwargs['m'] = str(kwargs.get('m', '\n'*4))
-        for k in 'tblr':
-            v = str(kwargs.get(k, '\n'*10))
-            if len(v) == 1: v = v*10
-            elif len(v) == 2: v = v[0]*5 + v[1]*5
-            elif len(v) == 6: v = v[:2] + v[1:3] + v[1] + v[3:5] + v[4:6] + v[4]
-            elif len(v) == 8: v = v[:4] + v[1] + v[4:] + v[5]
-            elif len(v) == 10: pass
-            else: raise ValueError(f"Invalid BorderDfn string: {k}={v!r}")
-            kwargs[k] = v
-        if len(kwargs['c']) != 8: raise ValueError(f"Invalid BorderDfn string: c={v!r}")
-        if len(kwargs['m']) != 4: raise ValueError(f"Invalid BorderDfn string: m={v!r}")
-        return kwargs
+    def define(name, *args, **kwargs):
+        dfn = BorderDfn(*args, **kwargs)
+        if name in BorderDfn.dfns and BorderDfn.dfns[name] != dfn:
+            raise ValueError(f"Redefining BorderDfn {name!r}:\nExisting: {BorderDfn.dfns[name]}\nTrying to set: {dfn}")
+        BorderDfn.dfns[name] = dfn
 
 
-    def __init__(self, val=None, **kwargs):
-        self._sides = None
-        if val == None:
-            vals = BorderDfn.canon()
-        elif isinstance(val, BorderDfn):
-            vals = {k:getattr(val,k) for k in 'cmtblr'}
-        elif val == 'blank':
-            vals = BorderDfn.canon(c=' '*8, t=' ', b=' ', l=' ', r=' ')
-        elif val == 'box':
-            vals = BorderDfn.canon(c='┌┐└┘++++', t='─-', b='─-', l='│|', r='│|')
-        elif val == 'dbox':
-            vals = BorderDfn.canon(c='╔╗╚╝####', t='═=', b='═=', l='║#', r='║#')
-        elif val == 'bracket':
-            vals = BorderDfn.canon(c=' '*8, t='┌──┐⎴-----', b='└──┘⎵-----', l='⎡⎢⎢⎣[[[[[[', r='⎤⎥⎥⎦]]]]]]')
-        elif val == 'paren':
-            vals = BorderDfn.canon(c=' '*8, t='╭──╮⏜/--\\-', b='╰──╯⏝\\--/-', l='⎛⎜⎜⎝(/||\\(', r='⎞⎟⎟⎠)\\||/)')
-        elif val == 'brace':
-            vals = BorderDfn.canon(c=' '*8, t='╭┴─╮⏞/`-\\*', b='╰┬─╯⏟\\,-/*', l='⎧⎨⎪⎩{/{|\\{', r='⎫⎬⎪⎭}\\}|/}')
-        elif len(str(val)) == 1:
-            val = str(val)
-            vals = BorderDfn.canon(c=val*8, t=val*10, b=val*10, l=val*10, r=val*10)
+    @staticmethod
+    def _to_bdr(v):
+        if isinstance(v, BorderDfn): return v.clone()
+        v = str(v).lower().split(':',1)#'.',1)
+        if len(v) == 1:
+            v = v[0].split('.',1)
+            if v[0] not in BorderDfn.dfns: raise ValueError(f"{v[0]!r} is not a defined BorderDfn")
+            bdr = BorderDfn.dfns[v[0]]
+            try:
+                return bdr if len(v) == 1 else BorderDfn(**{k:bdr[k] for k in v[1]})
+            except KeyError:
+                raise ValueError(f"Illegal selector {v[1]!r} in {'.'.join(v)!r}") 
         else:
-            raise ValueError(f"Invalid border value {val!r}")
-        vals.update({k:v for k,v in BorderDfn.canon(**kwargs).items() if k in kwargs})
-        for k, v in vals.items(): setattr(self, k, v)
+            return BorderDfn(**{v[0]:v[1]})
+
+
+    def __init__(self, *vals, **kwargs):
+        self._sides = None
+        if vals:
+            base = reduce(lambda a,b: a.update(b), [BorderDfn._to_bdr(b) for b in vals])
+        else:
+            base = {k:'\n' for k in BorderDfn.fields}
+        for k in BorderDfn.fields:
+            self[k] = str(kwargs.get(k, base[k]))
+
+
+    def __getitem__(self, k):
+        try:
+            return getattr(self, k)
+        except AttributeError:
+            return '\n'*BorderDfn.fld_size[k]
+
+
+    def __setitem__(self, k, v):
+        if len(v) == 1: v = v*BorderDfn.fld_size.get(k,2)
+        if k == 'tl': k,v = 'c', v[0]+'\n\n\n'+v[1]+'\n\n\n'
+        elif k == 'tr': k,v = 'c', '\n'+v[0]+'\n\n\n'+v[1]+'\n\n'
+        elif k == 'bl': k,v = 'c', '\n\n'+v[0]+'\n'+v[1]+'\n'
+        elif k == 'br': k,v = 'c', '\n\n\n'+v[0]+'\n\n\n'+v[1]
+        if len(v) == 2: v = v[0]*(BorderDfn.fld_size[k]//2) + v[1]*(BorderDfn.fld_size[k]//2)
+        if k == 'm':
+            if not all(c in '01\n' for c in v): raise ValueError(f"Invalid mask value: {k}={v!r}")
+        elif k in 'trbl':
+            if len(v) == 6: v = v[:2] + v[1:3] + v[1] + v[3:5] + v[4:6] + v[4]
+            elif len(v) == 8: v = v[:4] + v[1] + v[4:] + v[5]
+        if len(v) != BorderDfn.fld_size[k]: raise ValueError(f"Invalid BorderDfn: {k}={v!r}")
+        setattr(self, k, ''.join(o if n=='\n' else n for o,n in zip(self[k], v)))
+
+
+    def clone(self):
+        return BorderDfn(**{k:self[k] for k in BorderDfn.fields})
+
+
+    def vals(self):
+        return tuple(self[k] for k in BorderDfn.fields)
+
+
+    def update(self, newer):
+        out = self.clone()
+        for k in BorderDfn.fields:
+            out[k] = newer[k]
+        return out
+
+
+    def __eq__(self, other):
+        return self.vals() == (other and other.vals())
+
+
+    def __hash__(self):
+        return hash(self.vals())
 
 
     def __repr__(self):
         _m = lambda v: f'{v[0]!r}*{len(v)}' if v[0]*len(v) == v else repr(v)
-        args = [f'{k}={_m(getattr(self,k))}' for k in 'clrtbm']
+        args = [f'{k}={_m(self[k])}' for k in BorderDfn.fields]
         return f"BorderDfn({','.join(args)})"
 
 
     @property
     def sides(self):
         if not self._sides:
-            self._sides = [c not in 'Xx ' for c in self.m.replace('\n','1')]
+            self._sides = [c=='1' for c in self.m]
         return self._sides
     
 
@@ -80,14 +119,6 @@ class BorderDfn():
         return int(t) + int(b)
 
 
-    def merge_from(self, older):
-        out = BorderDfn()
-        for k in 'clrbtm':
-            pairs = zip(getattr(older,k), getattr(self, k))
-            setattr(out, k, ''.join(o if n=='\n' else n for o,n in pairs))
-        return out
-
-    
     def _line(self, w, ascii, top):
         if not self.sides[0 if top else 1]: return None
         c = self.c[4:] if ascii else self.c
@@ -115,3 +146,14 @@ class BorderDfn():
             else: txt += chars[2]
             w -= 1
         return txt
+
+
+
+BorderDfn.define('false', m='0')
+BorderDfn.define('1', m='1')
+BorderDfn.define(' ', c=' ', t=' ', b=' ', l=' ', r=' ')
+BorderDfn.define('-', c='┌┐└┘++++', t='─-', b='─-', l='│|', r='│|')
+BorderDfn.define('=', c='╔╗╚╝####', t='═=', b='═=', l='║#', r='║#')
+BorderDfn.define('[', t='┌──┐⎴-----', b='└──┘⎵-----', l='⎡⎢⎢⎣[[[[[[', r='⎤⎥⎥⎦]]]]]]')
+BorderDfn.define('(', t='╭──╮⏜/--\\-', b='╰──╯⏝\\--/-', l='⎛⎜⎜⎝(/||\\(', r='⎞⎟⎟⎠)\\||/)')
+BorderDfn.define('{', t='╭┴─╮⏞/`-\\*', b='╰┬─╯⏟\\,-/*', l='⎧⎨⎪⎩{/{|\\{', r='⎫⎬⎪⎭}\\}|/}')

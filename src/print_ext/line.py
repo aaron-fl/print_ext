@@ -1,6 +1,6 @@
+import copy, sys
 from functools import reduce
 from collections import namedtuple
-import copy
 from .span import Span
 from .context import Context, CVar, BoolCVar, IntCVar
 from .rich import Rich
@@ -60,7 +60,7 @@ class StyleCVar(CVar):
         
 
 style_cvar = Context.define(StyleCVar('style',''))
-Context.define(BoolCVar('ascii_only', 'ascii'))
+Context.define(BoolCVar('ascii', 'ascii_only'))
 Context.define(BoolCVar('text_wrap', 'wrap'))
 Context.define(JustCVar('justify', 'just'))
 Context.define(IntCVar('wrap_mark_from'))
@@ -245,7 +245,7 @@ class Line(Rich):
             rows = self._flatten_wrap(w) if w and self['text_wrap'] else self._flatten_no_wrap(w)
         dh = len(rows) - (h or 1e99)
         if dh > 0: # We are overflowing vertically by dh
-            vbar = '|' if self['ascii_only'] else '⋮'
+            vbar = '|' if self['ascii'] else '⋮'
             keep = len(rows) - dh - 1
             n = str(dh+1)
             e = Line(f"{vbar}{n} lines{vbar}\fja {vbar}{n}行{vbar}", style='dem', parent=self)
@@ -258,13 +258,13 @@ class Line(Rich):
     def _flatten_no_wrap(self, w):
         lhs = self.clone().trim(w//2)
         rhs = self.clone().trim(-((w-1)//2))
-        inter = Line(('~' if self['ascii_only'] else '…')*(w-lhs.width-rhs.width), style='dem')
+        inter = Line(('~' if self['ascii'] else '…')*(w-lhs.width-rhs.width), style='dem')
         return [Line(lhs, inter, rhs, parent=self)]
         
 
     def _flatten_wrap(self, w):
         cur, rows, wmf = self.clone(parent=self), [], max(self['wrap_mark_from'] or 4, 4)
-        prefix = '' if w < wmf else '\\ ' if self['ascii_only'] else '⤷ '
+        prefix = '' if w < wmf else '\\ ' if self['ascii'] else '⤷ '
         while True:
             lhs = cur.clone(parent=self).trim(w)
             cur.trim(-(cur.width - lhs.width))  

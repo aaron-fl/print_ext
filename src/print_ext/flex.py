@@ -98,6 +98,7 @@ class Flex(Rich):
 
 
     def _flatten_width_row(self, cells, w, h):
+        #print(f"_flatten_width_row {w}x{h} : {cells} ")
         flat = [list(c.user.flatten(w=c.size,h=h)) for c in cells]
         if h == 0:
             mh = len(flat[0]) if len(flat) == 1 else max(*[len(x) for x in flat])
@@ -106,18 +107,18 @@ class Flex(Rich):
 
 
     def _flatten_width(self, cells, wrap, w, h):
-        print(f'_flatten_width wrap?:{wrap}  {w}x{h}')
-        for cell in cells:
-            print(f'   --{cell.user}-- ', cell)
+        #print(f'_flatten_width wrap?:{wrap}  {w}x{h}')
+        #for cell in cells:
+        #    print(f'   --{cell.user}-- ', cell)
 
         def elide_cols(cells):
-            dots = '~' if self['ascii_only'] else '…'
+            dots = '~' if self['ascii'] else '…'
             if w > 30: dots = f'{dots}{len(cells)}{dots}'
             s = Line(style="dem", parent=self).insert(0, dots)
             return Size(nom=s.width, rate=0, user=s)
 
         def elide_rows(cells):
-            vbar = '|' if self['ascii_only'] else '⋮'
+            vbar = '|' if self['ascii'] else '⋮'
             s = Line(parent=self, style="dem", justify='|').insert(0, f'{vbar}{len(cells)}{vbar}')
             if w and s.width > w: s = Line(parent=self, style="dem", justify='|').insert(0, vbar)
             return Size(nom=1, rate=0, user=[Size(size=w, nom=s.width, user=s)])

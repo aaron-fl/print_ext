@@ -1,24 +1,25 @@
 import pytest, io
 from functools import reduce
-from print_ext.table import Table, CellRange
+from print_ext.table import Table, CellDfn, BorderDfn
 from print_ext.fill import Fill
 from print_ext.context import Context
 from print_ext.printer import Printer
 from print_ext.line import SMark as SM
+from print_ext.borders import Borders
 from .testutil import debug_dump
-
+from .printer_test import _printer
 
 def test_table_x():
-    t = Table(3, -1, 5, ascii=True)
+    t = Table(3, -1, 5, tmpl='0', ascii=True)
     t('test\tx\t')
-    t(33,'\t',Fill('a\vb'),'\t',Fill('.'), '\t', 'The quick brown fox jumped over the lazy dog')
-    for line, expect in zip(t.flatten(w=10), ['t~tx33    ', 'aaa.The~og', 'bbb.      ']):
+    t(33,'\t',Fill('a\vb'),'\t',Fill('.'), '\t', 'tは quick brown fox jumped over the lazy dog')
+    for line, expect in zip(t.flatten(w=10), ['t~tx33    ', 'aaa.tは~og', 'bbb.      ']):
         assert(line.styled()[0] == expect)
         
 
 
 def test_table_x2():
-    t = Table(3, -1, 5, ascii=True, wrap=True)
+    t = Table(3, -1, 5, ascii=True, tmpl='0', wrap=True)
     t('test\tx\t')
     t(33,'\t',Fill('a\vb'),'\t',Fill('.'), '\t', 'The quick brown fox jumped over the lazy dog')
     for line, expect in zip(t.flatten(w=15), ['tesx33         ', 't              ', 'aaa.The quick b', 'bbb.\\ rown fox ','aaa.\\ jumped ov','bbb.\\ er the la','aaa.\\ zy dog   ']):
@@ -36,29 +37,47 @@ def test_table_last_tab():
     assert(len(f) == 2)
     
 
+def test_table_templates():
+    t = Table(1,1)
+    t('1\t2\ta\tb\t')
+    flat = [f.styled() for f in t.flatten()]
+    print('\n'.join(f'-{x}-' for x in flat))
+    assert(flat[0] == ('1 2',[SM('em',0,3), SM('dem',1,2)]))
+    assert(flat[1] == ('a b',[SM('dem',1,2)]))
 
 
-def test_table_styles():
-    
-    t = Table(-1, -2, -3, ascii=True, style='r')
-    t.cell('R0', style='!')
+
+def test_table_styles():    
+    t = Table(-1, -2, -3, ascii=False, tmpl='0', style='r')
+    t.cell('R0', style='1')
     t.cell('C1', style='y')
     t.cell('R1%2C-1', style='_')
-
     t('A0\tA1\tA2\t')
     t('B0\tB1\tB2\t')
     t('C0\tC1\tC2\t')
     t('D0\tD1\tD2\t')
     rows = [r.styled() for r in t.flatten()]
-    assert(rows[0] == ('A0A1A2',[SM('r',0,6), SM('!',0,6), SM('y',2,4)]))
+    assert(rows[0] == ('A0A1A2',[SM('r',0,6), SM('1',0,6), SM('y',2,4)]))
     assert(rows[1] == ('B0B1B2', [SM('r',0,6), SM('y',2,4), SM('_',4,6)]))
     assert(rows[2] == ('C0C1C2', [SM('r',0,6), SM('y',2,4)]))
     assert(rows[3] == ('D0D1D2', [SM('r',0,6), SM('y',2,4), SM('_',4,6)]))
     assert(len(t) == 12)
     
 
-def test_table_CellRange_ctx_extend():
-    cells = [ CellRange('R0', cls=Fill, style='1-2'), CellRange('C1', cls=Table, style='3'), CellRange('R0C2', style='4')]
+
+def test_table_play():  
+    o,p = _printer(color=True, ascii=False)  
+    t = Table(-1, -2, -3, tmpl='pad')
+    print(t['tmpl'])
+    t('A0\tA1\tA2\tB0\t\b^r$ B1\tB2\t', 'C0\t\b$ C1\tC2\t')
+    t('D0\tD1\tD2\t')
+    p(t)
+    print(o.getvalue())
+
+
+
+def test_table_CellDfn_ctx_extend():
+    cells = [ CellDfn('R0', cls=Fill, style='1-2'), CellDfn('C1', cls=Table, style='3'), CellDfn('R0C2', style='4')]
     ctx = Context()
     assert(reduce(lambda a, c: c.ctx_merge(a, 4, 4, 10, 10), cells, ctx) == ctx)
     assert(reduce(lambda a, c: c.ctx_merge(a, 0, 4, 10, 10), cells, ctx)['cls'] == Fill)
@@ -67,20 +86,20 @@ def test_table_CellRange_ctx_extend():
 
 
 
-def test_table_CellRange():
-    for s in ['R0', 'R-1', 'R%3', 'R3%4', 'C3', 'R0C0']:
-        print(CellRange(s))
-    for s in ['r0', 'C0R0']:
+def test_table_CellDfn():
+    for s in ['r0', 'R-1', 'R%3', 'R3%4', 'C3', 'R0C0', 'all']:
+        print(CellDfn(s))
+    for s in ['0', 'C0R0']:
         with pytest.raises(ValueError):
-            CellRange(s)
+            CellDfn(s)
 
-    c = CellRange('R0')
+    c = CellDfn('R0')
     for rc in [(0,0), (0,1), (0, 99)]:
         assert(c.matches(*rc, 10,10))
     for rc in [(1,0), (3,1), (5, 99)]:
         assert(not c.matches(*rc, 10,10))
     
-    c = CellRange('R-4%2C3%3')
+    c = CellDfn('R-4%2C3%3')
     for rc in [(6,3), (8,6), (6, 9)]:
         assert(c.matches(*rc, 10,10))
     for rc in [(0,0), (8,0)]:

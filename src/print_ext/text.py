@@ -42,7 +42,7 @@ class Text(Rich):
 
     def flatten(self, w=0, h=0, **kwargs):
         rows = []
-        for line in self.each_child():
+        for line in self.lines:
             rows += list(line.flatten(w=w))
         maxw = rows[0].width if len(rows) == 1 else max(*[r.width for r in rows]) if rows and w == 0 else w
         for row in rows: row.justify(maxw)
