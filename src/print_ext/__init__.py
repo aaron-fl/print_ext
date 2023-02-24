@@ -1,2 +1,3 @@
-#from .printer import Printer
-#print = Printer()
+from .printer import Printer
+from .table import Table
+print = Printer()
