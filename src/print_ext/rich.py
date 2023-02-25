@@ -1,6 +1,7 @@
 from functools import reduce
 from .context import Context, CVar
 from .cache import cache
+from .widget import Widget
 from tests.testutil import ostr, context_info, ostr_ctx, debug_dump
 
 
@@ -27,7 +28,7 @@ Context.define(LangCVar('lang'))
 
 
 
-class Rich(Context):
+class Rich(Widget):
     ''' This is a mixin for adding rich-text parsing capabilities via the __call__ method.
 
     :Special characters:
@@ -162,10 +163,8 @@ class Rich(Context):
 
 
     def rich_append(self, el, ctx):
-        try:
+        if hasattr(el, 'ctx_parent'):
             el = el.ctx_parent(self)
-        except AttributeError:
-            pass # el is not a Context
         self.rich_stream.append((el,ctx))
         
 

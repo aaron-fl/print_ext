@@ -113,18 +113,6 @@ class Table(Flex):
 
 
     @property
-    def width(self):
-        flat = list(Table.flatten(self))
-        return flat[0].width if flat else 0
-
-
-    @property
-    def height(self):
-        flat = list(Table.flatten(self))
-        return len(flat)
-        
-
-    @property
     def cells(self):
         while self.rich_stream:
             elctx = self.rich_stream.pop(0)

@@ -9,20 +9,22 @@ class HR(Flex):
 
     ctx_defaults = Context.defaults(border=default_bdr)
     
-    @property
-    def width(self):
-        return self['width_max'] or (super().width + 6)
+
+    def calc_width(self):
+        return self['width_max'] or (super().calc_width(Flex) + 6)
 
 
     def flatten(self, w=0, h=0, **kwargs):
-        nom = super().width
-        mw = w or self['width_max'] or (nom + 6)
-        innerw = min(mw-6, nom)
-        if innerw <= 0:
-            yield from super().flatten(w=mw, h=h, **kwargs)
-            return
-        flat = list(super().flatten(w=innerw, h=h, **kwargs))
+        flat = list(super().flatten(w=0, h=h, **kwargs))
         if not flat: return []
+        print(f"---------- {w} {flat[0].width}")
+        if w and w <= 6:
+            yield from super().flatten(w=w, h=h, **kwargs)
+            return
+        mw = w or self['width_max'] or (flat[0].width + 6)
+        if mw-6 < flat[0].width:
+            flat = list(super().flatten(w=mw-6, h=h, **kwargs))
+        innerw = flat[0].width
         ascii, bdr, style = self['ascii'], self['border'], self['border_style']
         just = Just(self['just'],'|~')
         hrv = just.pad_v(len(flat)-1)

@@ -9,7 +9,6 @@ class Text(Rich):
     '''
     def __init__(self, *args, **kwargs):
         self.__lines = []
-        self.__width = None
         super().__init__(*args, **kwargs)
 
 
@@ -35,13 +34,15 @@ class Text(Rich):
         # Turn arrays of lines into a single Line object
         for i, line in enumerate(reversed(self.__lines)):
             if isinstance(line, Line): break
-            self.__lines[-1-i] = line[0].ctx_parent(self) if len(line) == 1 else Line(*line, parent=self) 
+            self.__lines[-1-i] = line[0].ctx_parent(self) if len(line) == 1 else Line(*line, parent=self)
+        self.changed_size()
         return self.__lines
 
 
 
     def flatten(self, w=0, h=0, **kwargs):
         rows = []
+        print(f"FLATTEN {self.lines}")
         for line in self.lines:
             rows += list(line.flatten(w=w))
         maxw = rows[0].width if len(rows) == 1 else max(*[r.width for r in rows]) if rows and w == 0 else w
@@ -51,18 +52,6 @@ class Text(Rich):
 
     def each_child(self):
         yield from self.lines
-
-
-    @property
-    def width(self):
-        if self.__width == None:
-            self.__width = max(0,0, *[l.width for l in self.lines])
-        return self.__width
-
-
-    @property
-    def height(self):
-        return len(self.lines)
 
 
     def clone(self, **kwargs):

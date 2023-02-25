@@ -19,6 +19,15 @@ class Fill(Text):
 
     ctx_defaults = Context.defaults(width_min=0, height_min=0)
 
+
+    def calc_width(self):
+        return 0
+
+
+    def calc_height(self):
+        return 0
+
+
     def flatten(self, w=0, h=0, **kwargs):
         rows = [x.clone(parent=self, **x.ctx_local) for x in self.lines]
         if not rows: rows = [Line(' ', parent=self)]

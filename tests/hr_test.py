@@ -56,5 +56,6 @@ def test_hr_small():
 
 def test_hr_clone():
     h = HR('bob', ascii=False)
+    print(h['width_max'])
     assert([str(x) for x in h.flatten()] == ['─┤ bob ├─'])
     assert([str(x) for x in Text(h,h).flatten()] == ['─┤ bob ├──┤ bob ├─'])

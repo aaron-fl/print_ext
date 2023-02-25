@@ -47,7 +47,7 @@ def test_flex_fox():
     print('\n'.join(debug_dump(els[0])))
     assert(el0[0]['width_max'] == 5)
     assert(el0[0]['width_nom'] == 9)
-    assert(els[2]['width_nom'] == 1)
+    assert(els[2]['width_nom'] == 0)
     assert(f(fox, 20, 0) == 'the q         yyyyyy,uick          yyyyyy,brown      foxyyyyyy')
     
 

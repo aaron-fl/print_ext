@@ -83,7 +83,7 @@ style_cvar = Context.define(StyleCVar('style',''))
 Context.define(BoolCVar('ascii', 'ascii_only'))
 Context.define(BoolCVar('text_wrap', 'wrap'))
 Context.define(JustCVar('justify', 'just'))
-Context.define(IntCVar('wrap_mark_from'))
+Context.define(IntCVar('wrap_mark_from', 'wmf'))
 
 
 
@@ -112,9 +112,8 @@ class Line(Rich):
     
     def __init__(self, *args, **kwargs):
         self.__spans = []
-        self.__up_to_date = False
-        self._changed_size()
         super().__init__(*args, **kwargs)
+        self.changed_size()
 
 
     @property
@@ -140,19 +139,15 @@ class Line(Rich):
             return self
         span = span.trim(-span.width+w) if width < 0 else span.trim(w)
         self.__spans[slice(0,i+1) if width < 0 else slice(i,len(self.__spans))] = [span] if span else []
-        self._changed_size()
+        self.changed_size()
         return self
 
 
-    @property
-    def width(self):
-        if self.__width == None:
-            self.__width = reduce(lambda a,x: x.width + a, self.spans, 0)
-        return self.__width
+    def calc_width(self):
+        return reduce(lambda a,x: x.width + a, self.spans, 0)
+    
 
-
-    @property
-    def height(self):
+    def calc_height(self):
         return int(self)
 
 
@@ -194,7 +189,7 @@ class Line(Rich):
             self.__spans.append(el)
         else:
             self.__spans.insert(0, el)
-        self._changed_size()
+        self.changed_size()
         return self
 
 
@@ -251,9 +246,10 @@ class Line(Rich):
         return _styled(self, '', self, self['style']), stack
 
 
-    def _changed_size(self):
-        self.__width = None
+    def changed_size(self):
+    #    self.__width = None
         self.__len = None
+        super().changed_size()
 
 
     def flatten(self, w=0, h=0, **kwargs):

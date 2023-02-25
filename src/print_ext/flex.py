@@ -3,21 +3,15 @@ from .rich import Rich
 from .span import Span
 from .line import Line
 from .size import Size
-from .context import Context, ObjectAttr, CVar, BoolCVar, EnumCVar, IntCVar, FloatCVar
+from .context import Context, ObjectAttr, CVar, BoolCVar, EnumCVar, FloatCVar
 from tests.testutil import ostr, ostr_ctx, debug_dump
 
 
 Context.define(BoolCVar('flex_reverse'))
 Context.define(BoolCVar('flex_wrap'))
 Context.define(EnumCVar('flex_dir', options=('-','|')))
-Context.define(IntCVar('width_nom', 'ww'))
-Context.define(IntCVar('width_min', 'wm'))
-Context.define(IntCVar('width_max', 'wx'))
-Context.define(FloatCVar('width_rate', 'ws'))
-Context.define(IntCVar('height_nom', 'hh'))
-Context.define(IntCVar('height_min', 'hm'))
-Context.define(IntCVar('height_max', 'hx'))
 Context.define(FloatCVar('height_rate', 'hs'))
+Context.define(FloatCVar('width_rate', 'ws'))
 
 
 
@@ -71,19 +65,8 @@ class Flex(Rich):
                 self._cells[-1-i] = Text(parent=self)
             for el, ctx in els:
                 self._cells[-1-i](el, **ctx)
+        self.changed_size()
         return self._cells[:-1] if self._cells[-1] == [] else self._cells
-
-
-    @property
-    def width(self):
-        flat = list(Flex.flatten(self))
-        return flat[0].width if flat else 0
-
-
-    @property
-    def height(self):
-        flat = list(Flex.flatten(self))
-        return len(flat)
 
 
     def clone(self, **kwargs):

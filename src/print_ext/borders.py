@@ -23,16 +23,15 @@ Context.define(BorderCVar('border'))
 class Borders(Flex):
     ctx_defaults = Context.defaults(border=(1,'-'), border_style='dem')
 
-    @property
-    def width(self):
-        bdr = self['border']
-        return super().width + (bdr.width if bdr else 0)
 
-
-    @property
-    def height(self):
+    def calc_width(self):
         bdr = self['border']
-        return super().height + (bdr.height if bdr else 0)
+        return super().calc_width(Flex) + (bdr.width if bdr else 0)
+
+    
+    def calc_height(self):
+        bdr = self['border']
+        return super().calc_height(Flex) + (bdr.height if bdr else 0)
 
 
     def flatten(self, w=0, h=0, **kwargs):
