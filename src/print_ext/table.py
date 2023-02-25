@@ -222,3 +222,8 @@ Table.define('dbl',
     CellDfn('R0', cls=Borders, border=('c:╤╗\n\n##\n\n', 't:═#', 'm:1\n\n\n')),
     CellDfn('R0C0', border=('c:╔\n\n\n#\n\n\n')),
 )
+Table.define('kv',
+    #CellDfn('ALL', cls=Borders, border=(' ', 'm:0010')),
+    CellDfn('C0', border='m:\n\n0\n', style='1', just='>', width_rate=0),
+    #CellDfn('C1', cls=Borders, border=('-', 'm:1'), width_rate=1)
+)
