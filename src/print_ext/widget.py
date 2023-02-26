@@ -1,5 +1,5 @@
 from .cache import cache
-from .context import Context, IntCVar
+from .context import Context, IntCVar, ObjectAttr
 
 
 Context.define(IntCVar('width_nom', 'ww'))
@@ -10,7 +10,7 @@ Context.define(IntCVar('height_min', 'hm'))
 Context.define(IntCVar('height_max', 'hx'))
 
 
-class Widget(Context):
+class Widget(Context, width_nom=ObjectAttr('width', None), height_nom=ObjectAttr('height', None)):
     ''' The obligatory widget; Generic ancestor to all things flattenable.
 
     This is an abstract base class for all things that draw to a rectangle.
@@ -41,9 +41,7 @@ class Widget(Context):
      
 
     def calc_width(self, klass=None):
-        print(f"calc_width {self.__class__}  {klass}")
         flat = list((klass or self.__class__).flatten(self))
-        print([f"{f}{len(f)}" for f in flat])
         return flat[0].width if flat else 0
 
 

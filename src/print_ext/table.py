@@ -44,7 +44,6 @@ class CellDfn():
         return Context(parent=ctx, **self.kwargs)
 
 
-
     def matches(self, r, c, n_rows, n_cols):
         r_off = self.r % n_rows
         c_off = self.c % n_cols
@@ -85,10 +84,7 @@ class ColDfn():
 
 
 
-class Table(Flex):
-
-    ctx_defaults = Context.defaults(tmpl='pad,em')
-    
+class Table(Flex, tmpl='pad,em'):    
     _tmpls = {}
 
     @staticmethod
@@ -224,6 +220,6 @@ Table.define('dbl',
 )
 Table.define('kv',
     #CellDfn('ALL', cls=Borders, border=(' ', 'm:0010')),
-    CellDfn('C0', border='m:\n\n0\n', style='1', just='>', width_rate=0),
+    CellDfn('C0', border='m:\n\n0\n', style='1', just='>'),
     #CellDfn('C1', cls=Borders, border=('-', 'm:1'), width_rate=1)
 )

@@ -13,9 +13,11 @@ def test_borders_hi():
     assert(rows[2] == ('└──┘',[SM('y',0,4), SM('dem',0,4)]))
 
 
+
 def test_borders_blank():
     b = Borders(border=(1,'-'), ascii=True)
     assert([r.styled()[0] for r in b.flatten()] == ['++','++'])
+
 
 
 def test_borderdfn_dfns():

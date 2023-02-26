@@ -9,3 +9,4 @@ def test_pretty_list():
     p(l)
     print(o.getvalue())
     assert(o.getvalue() == '')
+

@@ -18,7 +18,7 @@ class PrettyList(Widget):
 
     
     def flatten(self, w=0, h=0, **kwargs):
-        t = Table(0,0,tmpl='kv')
+        t = Table(0.0,0,tmpl='kv')
         for i,v in enumerate(self.val):
             t(f'\bdem {self.paren[0]}', i,f'\bdem {self.paren[1]} ', '\t', pretty(v), '\t')
         yield from t.flatten(w=w,h=h,**kwargs)
@@ -36,7 +36,7 @@ class PrettyDict(Widget):
 
     
     def flatten(self, w=0, h=0, **kwargs):
-        t = Table(0,0,tmpl='kv')
+        t = Table(0.0, 0, tmpl='kv')
         for k,v in self.val.items():
             t(k,' ', '\t',pretty(v),'\t')
         yield from t.flatten(w=w,h=h,**kwargs)

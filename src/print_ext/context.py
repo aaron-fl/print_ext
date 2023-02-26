@@ -1,7 +1,27 @@
 from .context_cvar import ctx_vars, CallableVar, ObjectAttr, CVar, IntCVar, FloatCVar, BoolCVar, EnumCVar
 from tests.testutil import ostr
 
-class Context(object):
+
+class MetaContext(type):
+    def __new__(self, name, bases, attrs, **kwargs):
+        cls = super().__new__(self, name, bases, attrs)
+        try:
+            cls.ctx_class = dict(cls.__mro__[1].ctx_class)
+            cls.ctx_class_trace = list(cls.__mro__[1].ctx_class_trace)
+        except:
+            cls.ctx_class = {}
+            cls.ctx_class_trace = []
+        cvars = ctx_vars()
+        cls.ctx_class_trace.insert(0, {cvars[k]:v if isinstance(v, CallableVar) else cvars[k].canon(v) for k,v in kwargs.items()})
+        for cv,v in cls.ctx_class_trace[0].items():
+            if hasattr(cv, 'merge') and cv.names[0] in cls.ctx_class:
+                v = cv.merge(v, cls.ctx_class[cv.names[0]])
+            cls.ctx_class[cv.names[0]] = v
+        return cls
+
+
+
+class Context(metaclass=MetaContext):
     ''' 
     The lookup for a context variable
      1. defined on self
@@ -25,10 +45,15 @@ class Context(object):
         b(a)
     '''
 
-    @staticmethod
-    def defaults(**kwargs):
-        cvars = ctx_vars()
-        return {cvars[k].names[0]: v if isinstance(v, CallableVar) else cvars[k].canon(v)  for k,v in kwargs.items()}
+
+    #@classmethod
+    #def defaults(self, **kwargs):
+    #    print(f"DEFAULTS {self}  {kwargs}")
+    #    def _f(cls):
+    #        cvars = ctx_vars()
+    #        cls._clsctx = {cvars[k].names[0]: v if isinstance(v, CallableVar) else cvars[k].canon(v)  for k,v in kwargs.items()}
+    #        return cls
+    #    return _f
 
 
     @classmethod
@@ -38,16 +63,17 @@ class Context(object):
             if name not in cvars:
                 cvars[name] = cvar
             elif cvar != cvars[name]:
-                raise ValueError(f"ERROR: Can't register the duplicate name '{name}'\nCurrent: {cvars[name]}\nTrying to register: {cvar}")
+                raise ValueError(f"Can't register the duplicate name '{name}'\nCurrent: {cvars[name]}\nTrying to register: {cvar}")
         return cvar
 
 
     @classmethod
     def _ctx_lookup_class(self, cvar):
-        key = cvar.names[0]
-        for cls in self.__mro__:
-            try: return cls.ctx_defaults[key], cls
-            except (AttributeError, KeyError): continue
+        return self.ctx_class.get(cvar.names[0], None), self
+        #key = cvar.names[0]
+        #for cls in self.__mro__:
+        #    try: return cls.ctx_defaults[key], cls
+        #    except (AttributeError, KeyError): continue
 
 
     def __init__(self, parent=None, **kwargs):
@@ -106,6 +132,11 @@ class Context(object):
             return self.clone(parent=parent, **self.ctx_flatten())
         self.parent = parent
         return self
+
+
+    def ctx_trace(self):
+        cvars = ctx_vars()
+        return [{cvars[k]:v for k,v in self.ctx_local.items()}, *self.__class__.ctx_class_trace]
 
 
     def clone(self, *args, **kwargs):

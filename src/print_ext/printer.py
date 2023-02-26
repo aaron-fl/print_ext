@@ -4,6 +4,7 @@ from .borders import Borders
 from .table import Table
 from .context import Context
 from .flex import Flex
+from .pretty import pretty
 from .sgr import SGR
 from .hr import HR
 
@@ -142,3 +143,7 @@ class Printer(Context):
 
     def hr(self, *args, **kwargs):
         self(HR(*args, **kwargs))
+
+
+    def pretty(self, *args, **kwargs):
+        self(pretty(args[0]))

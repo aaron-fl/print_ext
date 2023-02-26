@@ -1,6 +1,14 @@
 import pytest 
 from print_ext.context import Context, CVar, IntCVar, FloatCVar, ObjectAttr
-from .testutil import debug_dump
+from .testutil import debug_dump, print_ctx_trace
+
+class MergeCVar(CVar):
+    def canon(self, v):
+        return v if isinstance(v, list) else [v]
+
+    def merge(self, val, pval):
+        return val + pval
+
 
 Context.define(CVar('d'))
 Context.define(CVar('z'))
@@ -8,22 +16,23 @@ Context.define(IntCVar('m'))
 Context.define(IntCVar('q','Q'))
 Context.define(IntCVar('a','A','aa'))
 Context.define(FloatCVar('pi','PI'))
+Context.define(MergeCVar('r'))
 
 
-class Animal(Context):
-    ctx_defaults = Context.defaults(a=3, pi=3.1415)
+class Animal(Context, a=3, pi=3.1415, r='x'):
+    pass#ctx_defaults = Context.defaults()
 
 
-class Cat(Animal):
-    ctx_defaults = Context.defaults(A=4)
+class Cat(Animal, A=4, r=3):
+    #ctx_defaults = Context.defaults(A=4)
 
     @property
     def width(self):
         return 99 + self['a']
 
 
-class Dog(Animal):
-    ctx_defaults = Context.defaults(a=5)
+class Dog(Animal, a=5, r='hi'):
+    pass#ctx_defaults = Context.defaults(a=5)
 
 
 def test_ctx_redefine():
@@ -40,6 +49,14 @@ def test_ctx_CallableVar():
     assert(c['width_nom'] == -101)
     c = Cat(width_nom=ObjectAttr('width', -101))
     assert(c['width_nom'] == 103)
+
+
+
+def test_ctx_class_merge():
+    c = Cat(r='z')
+    d = Dog(parent=c)
+    print_ctx_trace(d)
+    assert(d['r'] == ['z', 'hi','x', 3, 'x'])
 
 
 

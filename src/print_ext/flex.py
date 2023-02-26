@@ -32,9 +32,7 @@ class Flex(Rich):
     :Examples:
 
         
-    '''
-    ctx_defaults = Context.defaults(width_nom=ObjectAttr('width', None), height_nom=ObjectAttr('height', None))
-    
+    '''    
     def __init__(self, *args, **kwargs):
         self._cells = [[]]
         super().__init__(*args, **kwargs)

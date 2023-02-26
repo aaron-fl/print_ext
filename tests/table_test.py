@@ -106,6 +106,18 @@ def test_table_CellDfn():
         assert(not c.matches(*rc, 10,10))
 
 
+@pytest.mark.xfail(reason="can't reproduce")
+def test_border_hilite_bug():
+    o, p = _printer(ascii=True, color=True)
+    t= Table(0,0,tmpl='grid')
+    t('\by a\tb', '\tc\td\t')
+    p(t)
+    print(o.getvalue())
+    assert(o.getvalue() == '')
+    raise(False)
+
+
+
 def test_sudoku():
     o,p = _printer()
     b = Table(1,1,1,1,1,1,1,1,1, tmpl='grid,dbl')

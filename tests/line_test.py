@@ -30,10 +30,8 @@ class EmptyClass(Context):
         return self.val
 
 
-
-class StyleCtx(Context):
-    ctx_defaults = Context.defaults(style='x-y')
-
+class StyleCtx(Context, style='x-y'):
+    pass
 
 
 def test_ctx_style():

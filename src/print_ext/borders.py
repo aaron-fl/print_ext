@@ -20,9 +20,7 @@ Context.define(BorderCVar('border'))
 
 
 
-class Borders(Flex):
-    ctx_defaults = Context.defaults(border=(1,'-'), border_style='dem')
-
+class Borders(Flex, border=(1,'-'), border_style='dem'):
 
     def calc_width(self):
         bdr = self['border']

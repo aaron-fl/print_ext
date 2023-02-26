@@ -3,12 +3,7 @@ from .context import Context
 from .flex import Flex
 from .line import Line, Just
 
-class HR(Flex):
-
-    default_bdr = BorderDfn(l='\n┤│\n\n\n[[\n\n', r='\n├│\n\n\n]]\n\n', t='─-')
-
-    ctx_defaults = Context.defaults(border=default_bdr)
-    
+class HR(Flex, border=BorderDfn(l='\n┤│\n\n\n[[\n\n', r='\n├│\n\n\n]]\n\n', t='─-')):
 
     def calc_width(self):
         return self['width_max'] or (super().calc_width(Flex) + 6)

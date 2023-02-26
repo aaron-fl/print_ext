@@ -4,7 +4,7 @@ from print_ext.span import Span
 from print_ext.text import Text
 import print_ext.flex
 
-class Fill(Text):
+class Fill(Text, width_min=0, height_min=0):
     ''' Fills the given block of space (when flattened) with a simple repeating pattern.
 
     :Examples:
@@ -16,9 +16,6 @@ class Fill(Text):
         >>> [str(l) for l in Fill('a\v','b').flatten(3,3)]
         ['aaa','bbb','aaa']  
     '''
-
-    ctx_defaults = Context.defaults(width_min=0, height_min=0)
-
 
     def calc_width(self):
         return 0

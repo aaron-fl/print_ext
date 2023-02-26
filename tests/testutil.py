@@ -5,6 +5,19 @@ def oid(obj):
 def ostr(obj):
     return f'<{obj.__class__.__name__}#{oid(obj)}> '
 
+
+def print_ctx_trace(obj, to_parent=None):
+    o = obj
+    while o != None and o != to_parent:
+        line = ('' if obj == o else '  -> ') + ostr(o) + ' '
+        for trace in o.ctx_trace():
+            line += ', '.join(f'{k.names[0]}={v}' for k,v in trace.items()) + ' -- '
+        print(line)
+        o = o.parent
+
+
+
+
 def context_info(obj, parent=None):
     def _s(o):
         if o == None or o == parent: return ''
