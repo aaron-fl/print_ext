@@ -16,7 +16,7 @@ class ProxyContext(Context):
     def ctx_flatten(self):
         return {} if self.is_empty() else super().ctx_flatten()
 
-
+        
 
 class LangCVar(CVar):
     def canon(self, val):
@@ -68,6 +68,7 @@ class Rich(Widget):
     def __init__(self, *args, **kwargs):
         self.rich_stream = []
         super().__init__(**kwargs)
+        self.changed_size()
         self(*args)
 
 
@@ -95,6 +96,7 @@ class Rich(Widget):
                 self.rich_append(el, self.ctx_cur.ctx_flatten())
             else:
                 self.rich_append(str(el), self.ctx_cur.ctx_flatten())
+        self.changed_size()
         return self
 
 
@@ -120,15 +122,6 @@ class Rich(Widget):
             else: # empty \b
                 self.__pop(eoc)
             if txt: self.rich_append(txt, self.ctx_cur.ctx_flatten())
-
-
-    def ctx_cur_dbg(self):
-        s = ''
-        ctx = self.ctx_cur
-        while ctx:
-            s += ('$' if ctx.eoc else '.') + '-'.join(ctx.ctx_local.get('style',[])) + ' | '
-            ctx = ctx.parent
-        return s
 
 
     def __pop(self, eoc):
@@ -163,8 +156,10 @@ class Rich(Widget):
 
 
     def rich_append(self, el, ctx):
-        if hasattr(el, 'ctx_parent'):
+        try:
             el = el.ctx_parent(self)
+        except AttributeError:
+            pass
         self.rich_stream.append((el,ctx))
         
 
@@ -176,7 +171,6 @@ class Rich(Widget):
         self.rich_stream.append(('\t',ctx))
 
     
-
 
 def _unindent(txt):
     if '\n' not in txt: return txt

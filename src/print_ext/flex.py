@@ -63,7 +63,6 @@ class Flex(Rich):
                 self._cells[-1-i] = Text(parent=self)
             for el, ctx in els:
                 self._cells[-1-i](el, **ctx)
-        self.changed_size()
         return self._cells[:-1] if self._cells[-1] == [] else self._cells
 
 
@@ -121,7 +120,10 @@ class Flex(Rich):
 
     _keys = ('nom', 'min', 'max', 'rate')
 
-    def flatten(self, w=0, h=0, **kwargs):
+    def _flatten(self, w=0, h=0, **kwargs):
+        try: self.flatten_count += 1
+        except: self.flatten_count = 0
+
         wrap = self['flex_wrap']
         els = list(reversed(self.cells) if self['flex_reverse'] else self.cells)
         if not els: return []

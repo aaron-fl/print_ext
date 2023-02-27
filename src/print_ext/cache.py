@@ -1,9 +1,5 @@
 import types
 
-def pshow(x='', p=None):
-    print(f"{x} {id(p)}({p.fget}, {p.fset}, {p.fdel})")
-    #print(dir(p))
-
 
 class _CacheDecorator():
     def __init__(self, fn):

@@ -3,7 +3,7 @@ from math import ceil
 from functools import reduce
 from .flex import Flex
 from .line import StyleCVar
-from .context import Context, CtxProxy, CVar
+from .context import Context, CVar
 from .text import Text
 from .size import Size
 from .borders import Borders, BorderDfn
@@ -154,7 +154,10 @@ class Table(Flex, tmpl='pad,em'):
         return el
 
 
-    def flatten(self, w=0, h=0, **kwargs):
+    def _flatten(self, w=0, h=0, **kwargs):
+        try: self.flatten_count += 1
+        except: self.flatten_count = 0
+
         n_cols = len(self.cols)
         cells = self.cells
         n_rows = ceil(len(cells)/n_cols)

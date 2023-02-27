@@ -67,9 +67,9 @@ class Context(metaclass=MetaContext):
         return cvar
 
 
-    @classmethod
-    def _ctx_lookup_class(self, cvar):
-        return self.ctx_class.get(cvar.names[0], None), self
+    #@classmethod
+    #def _ctx_lookup_class(self, cvar):
+    #    return self.ctx_class.get(cvar.names[0], None), False
         #key = cvar.names[0]
         #for cls in self.__mro__:
         #    try: return cls.ctx_defaults[key], cls
@@ -78,7 +78,10 @@ class Context(metaclass=MetaContext):
 
     def __init__(self, parent=None, **kwargs):
         self.ctx_local = {}
+        self.ctx_cache = {}
+        self.children = set()
         self.parent = parent
+        if parent != None: parent.children.add(self)
         self.ctx(**kwargs)
 
 
@@ -106,13 +109,29 @@ class Context(metaclass=MetaContext):
         cvars = ctx_vars()
         vals = tuple(v(self) if isinstance(v,CallableVar) else v for v in (self.ctx_lookup(cvars[k])[0] for k in keys))
         for k, v in set_vals.items():
-            k = cvars[k]
-            v = None if v == None else v if isinstance(v, CallableVar) else k.canon(v)
+            cv = cvars[k]
+            k = cv.names[0]
             if v != None:
-                self.ctx_local[k.names[0]] = v
-            elif k.names[0] in self.ctx_local:
-                del self.ctx_local[k.names[0]]
+                v = v if isinstance(v, CallableVar) else cv.canon(v)
+                self.ctx_local[k] = v
+            elif k in self.ctx_local:
+                del self.ctx_local[k]
+            self.clear_ctx_cache(k)
         return None if len(vals) == 0 else vals[0] if len(vals) == 1 else vals
+
+
+    def clear_ctx_cache(self, k):
+        #print(f'Clear Cache {k}')
+        self.changed_size()
+        #try: del self.ctx_cache_flatten
+        #except: pass
+        if k in self.ctx_cache: del self.ctx_cache[k]
+        for child in self.children:
+            child.clear_ctx_cache(k)
+
+
+    def changed_size(self):
+        pass
 
 
     def each_child(self):
@@ -128,10 +147,12 @@ class Context(metaclass=MetaContext):
 
 
     def ctx_parent(self, parent):
+        el = self
         if parent.ctx_contains(self) or self.parent != None and id(self.parent) != id(parent):
-            return self.clone(parent=parent, **self.ctx_flatten())
-        self.parent = parent
-        return self
+            el = self.clone(**self.ctx_flatten())
+        el.parent = parent
+        parent.children.add(el)
+        return el
 
 
     def ctx_trace(self):
@@ -145,30 +166,37 @@ class Context(metaclass=MetaContext):
         return self.__class__(*args, **kwargs)
 
 
-    def ctx_lookup(self, cvar, parent=None):
+    def ctx_lookup(self, cvar):
+        k = cvar.names[0]
+        if k not in self.ctx_cache:
+            self.ctx_cache[k] = self._ctx_lookup(cvar)
+        return self.ctx_cache[k]
+
+
+    def _ctx_lookup(self, cvar):
         ''' Lookup a single cvar on this object
         
         Returns:
             A tuple (value, defining_object)
         '''
-        if hasattr(cvar, 'merge'): return self._ctx_lookup_merge(cvar), None
+        if hasattr(cvar, 'merge'): return self._ctx_lookup_merge(cvar), True
         # No merge needed so just pick the closest value
         if (k:=cvar.names[0]) in self.ctx_local:
-            return self.ctx_local[k], self # self object has defined a value
+            return self.ctx_local[k], True # self object has defined a value
         # Our object does not define cvar,  Check parent
         try:
             val_src = self.parent.ctx_lookup(cvar)
-            if isinstance(val_src[1], Context): return val_src # Our parent context is defining a value
+            if val_src[1]: return val_src # Our parent context is defining a value
             # Check if we have a better default to use
         except AttributeError:
             # Parent may not be defined, or may not be a Context object with ctx_lookup
-            val_src = None, cvar # This is our last ditch effort
+            val_src = None, False # This is our last ditch effort
         # If our class defines cvar then that is better than the parent's class cvar or None
-        return self._ctx_lookup_class(cvar) or val_src
+        return (self.ctx_class.get(cvar.names[0], None), False) or val_src
 
 
     def ctx_lookup_self(self, cvar):
-        return (self._ctx_lookup_class(cvar) or (None,None))[0], self.ctx_local.get(cvar.names[0], None)
+        return self.ctx_class.get(cvar.names[0], None), self.ctx_local.get(cvar.names[0], None)
 
 
     def _ctx_lookup_merge(self, cvar):
@@ -182,6 +210,14 @@ class Context(metaclass=MetaContext):
         for v in vals: val = v[0] if val == None else val if v[0] == None else cvar.merge(v[0], val)
         for v in vals: val = v[1] if val == None else val if v[1] == None else cvar.merge(v[1], val)
         return val
+
+
+    def ctx_flatten(self):
+        try:
+            return self.ctx_cache_flatten
+        except AttributeError:
+            self.ctx_cache_flatten = self._ctx_flatten()
+            return self.ctx_cache_flatten
 
 
     def ctx_flatten(self):
@@ -205,13 +241,3 @@ class Context(metaclass=MetaContext):
 
     def __delitem__(self, key):
         self.ctx(**{key:None})
-
-
-
-class CtxProxy(Context):
-    def __init__(self, child, **kwargs):
-        self.child = child.ctx_parent(self)
-        super().__init__(**kwargs)
-
-    def flatten(self, **kwargs):
-        yield from self.child.flatten(**kwargs)

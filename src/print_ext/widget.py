@@ -16,8 +16,18 @@ class Widget(Context, width_nom=ObjectAttr('width', None), height_nom=ObjectAttr
     This is an abstract base class for all things that draw to a rectangle.
     '''
 
+    def __init__(self, *args ,**kwargs):
+        super().__init__(*args, **kwargs)
+
+
     def flatten(self, w=0, h=0, **kwargs):
-        return []
+        try:
+            if not w+h and not kwargs: return self.__cached_flatten
+        except AttributeError:
+            pass
+        rows = self._flatten(w=w, h=h, **kwargs)
+        if not w+h and not kwargs: self.__cached_flatten = rows
+        return rows
 
 
     @property
@@ -41,15 +51,20 @@ class Widget(Context, width_nom=ObjectAttr('width', None), height_nom=ObjectAttr
      
 
     def calc_width(self, klass=None):
-        flat = list((klass or self.__class__).flatten(self))
+        flat = list(klass._flatten(self) if klass else self.flatten())
         return flat[0].width if flat else 0
 
 
     def calc_height(self, klass=None):
-        return len((klass or self.__class__).flatten(self))
+        flat = klass._flatten(self) if klass else self.flatten()
+        return len(flat)
 
 
     def changed_size(self):
         self._clear__width()
         self._clear__height()
+        try:
+            del self.__cached_flatten
+        except:
+            pass
     

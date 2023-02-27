@@ -9,16 +9,18 @@ class HR(Flex, border=BorderDfn(l='\n┤│\n\n\n[[\n\n', r='\n├│\n\n\n]]\n\
         return self['width_max'] or (super().calc_width(Flex) + 6)
 
 
-    def flatten(self, w=0, h=0, **kwargs):
-        flat = list(super().flatten(w=0, h=h, **kwargs))
+    def _flatten(self, w=0, h=0, **kwargs):
+        try: self.flatten_count += 1
+        except: self.flatten_count = 0
+
+        flat = list(super()._flatten(w=0, h=h, **kwargs))
         if not flat: return []
-        print(f"---------- {w} {flat[0].width}")
         if w and w <= 6:
-            yield from super().flatten(w=w, h=h, **kwargs)
+            yield from super()._flatten(w=w, h=h, **kwargs)
             return
         mw = w or self['width_max'] or (flat[0].width + 6)
         if mw-6 < flat[0].width:
-            flat = list(super().flatten(w=mw-6, h=h, **kwargs))
+            flat = list(super()._flatten(w=mw-6, h=h, **kwargs))
         innerw = flat[0].width
         ascii, bdr, style = self['ascii'], self['border'], self['border_style']
         just = Just(self['just'],'|~')
