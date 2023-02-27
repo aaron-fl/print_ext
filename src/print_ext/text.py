@@ -35,7 +35,6 @@ class Text(Rich):
         for i, line in enumerate(reversed(self.__lines)):
             if isinstance(line, Line): break
             self.__lines[-1-i] = line[0].ctx_parent(self) if len(line) == 1 else Line(*line, parent=self)
-        self.changed_size()
         return self.__lines
 
 

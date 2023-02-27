@@ -68,6 +68,7 @@ class Rich(Widget):
     def __init__(self, *args, **kwargs):
         self.rich_stream = []
         super().__init__(**kwargs)
+        self.changed_size()
         self(*args)
 
 
@@ -95,6 +96,7 @@ class Rich(Widget):
                 self.rich_append(el, self.ctx_cur.ctx_flatten())
             else:
                 self.rich_append(str(el), self.ctx_cur.ctx_flatten())
+        self.changed_size()
         return self
 
 

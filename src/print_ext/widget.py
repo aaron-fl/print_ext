@@ -30,16 +30,6 @@ class Widget(Context, width_nom=ObjectAttr('width', None), height_nom=ObjectAttr
         return self.calc_height()
 
 
-    @cache
-    def _width(self):
-        return self.calc_width
-
-
-    @cache
-    def _height(self):
-        return self.calc_height
-     
-
     def calc_width(self, klass=None):
         flat = list((klass or self.__class__).flatten(self))
         return flat[0].width if flat else 0
@@ -50,6 +40,7 @@ class Widget(Context, width_nom=ObjectAttr('width', None), height_nom=ObjectAttr
 
 
     def changed_size(self):
-        self._clear__width()
-        self._clear__height()
+        pass
+        #self._clear__width()
+        #self._clear__height()
     

@@ -63,7 +63,6 @@ class Flex(Rich):
                 self._cells[-1-i] = Text(parent=self)
             for el, ctx in els:
                 self._cells[-1-i](el, **ctx)
-        self.changed_size()
         return self._cells[:-1] if self._cells[-1] == [] else self._cells
 
 
