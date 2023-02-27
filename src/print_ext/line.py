@@ -113,7 +113,6 @@ class Line(Rich):
     def __init__(self, *args, **kwargs):
         self.__spans = []
         super().__init__(*args, **kwargs)
-        self.changed_size()
 
 
     @property
