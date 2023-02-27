@@ -120,7 +120,7 @@ class Flex(Rich):
 
     _keys = ('nom', 'min', 'max', 'rate')
 
-    def _flatten(self, w=0, h=0, **kwargs):
+    def flatten(self, w=0, h=0, **kwargs):
         wrap = self['flex_wrap']
         els = list(reversed(self.cells) if self['flex_reverse'] else self.cells)
         if not els: return []

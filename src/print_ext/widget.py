@@ -10,6 +10,7 @@ Context.define(IntCVar('height_min', 'hm'))
 Context.define(IntCVar('height_max', 'hx'))
 
 
+
 class Widget(Context, width_nom=ObjectAttr('width', None), height_nom=ObjectAttr('height', None)):
     ''' The obligatory widget; Generic ancestor to all things flattenable.
 
@@ -18,10 +19,6 @@ class Widget(Context, width_nom=ObjectAttr('width', None), height_nom=ObjectAttr
 
     def __init__(self, *args ,**kwargs):
         super().__init__(*args, **kwargs)
-
-
-    def flatten(self, w=0, h=0, **kwargs):
-        return self._flatten(w=w,h=h,**kwargs)
 
 
     @property
@@ -35,17 +32,17 @@ class Widget(Context, width_nom=ObjectAttr('width', None), height_nom=ObjectAttr
 
 
     def calc_width(self, klass=None):
-        flat = list(klass._flatten(self) if klass else self.flatten())
+        flat = list(klass.flatten(self) if klass else self.flatten())
         return flat[0].width if flat else 0
 
 
     def calc_height(self, klass=None):
-        flat = klass._flatten(self) if klass else self.flatten()
+        flat = klass.flatten(self) if klass else self.flatten()
         return len(flat)
 
 
     def changed_size(self):
-        pass
+        self.__width = None
         #self._clear__width()
         #self._clear__height()
     

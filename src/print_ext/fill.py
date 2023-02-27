@@ -25,7 +25,7 @@ class Fill(Text, width_min=0, height_min=0):
         return 0
 
 
-    def _flatten(self, w=0, h=0, **kwargs):
+    def flatten(self, w=0, h=0, **kwargs):
         rows = [x.clone(parent=self, **x.ctx_local) for x in self.lines]
         if not rows: rows = [Line(' ', parent=self)]
         if not w: w = rows[0].width if len(rows) == 1 else max(*[r.width for r in rows])

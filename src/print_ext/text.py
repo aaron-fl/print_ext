@@ -38,7 +38,7 @@ class Text(Rich):
         return self.__lines
 
 
-    def _flatten(self, w=0, h=0, **kwargs):
+    def flatten(self, w=0, h=0, **kwargs):
         rows = []
         for line in self.lines:
             rows += list(line.flatten(w=w))

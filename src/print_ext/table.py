@@ -188,7 +188,7 @@ class Table(Flex, tmpl='pad,em'):
         super().changed_size()
 
 
-    def _flatten(self, w=0, h=0, **kwargs):
+    def flatten(self, w=0, h=0, **kwargs):
         n_cols = len(self.cols)
         cells = self.cells
         n_rows = ceil(len(cells)/n_cols)

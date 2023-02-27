@@ -8,12 +8,8 @@ hard = {'apiVersion': 'networking.k8s.io/v1', 'kind': 'Ingress', 'metadata': {'n
 
 simple = {'apiVersion': 'networking.k8s.io/v1  the is the longest line of them all, twoa three foru five six seven eight nine ten ', 'kind': 'Ingress', 'metadata': {'name': 'toss-ingress', 'namespace': 'toss', 'annotations': {'kubernetes.io/ingress.global-static-ip-name': 'toss-ip', 'nginx.ingress.kubernetes.io/proxy-read-timeout': '120'}}, 'spec': {'tls': [{'secretName': 'toss-online-com-certbot'}], 'rules': [{'host': 'm-test.tos-land.net', 'http': {'paths': [{'path': '/', 'pathType': 'Prefix', 'backend': {'service': {'name': 'prod-api-service', 'port': {'number': 9000}}}}]}}, {'host': 'tos-land.net', 'http': {'paths': [{'path': '/', 'pathType': 'Prefix', 'backend': {'service': {'name': 'prod-api-service', 'port': {'number': 9000}}}}]}} ]}}
 
-def make_profile(x):
-    #o,p = _printer(color=True)
-    
+def make_profile(x):    
     print.pretty(x)
-    
-    #print(o.getvalue())
 
     
 
@@ -65,15 +61,9 @@ def show(f1, f2):
             t(' \b3$ ',k[0],':',k[1])
         t('\t')
         
-        #for calee, vv in v[4].items():
-        #    print(k, calee, p.stats[calee])
-
-    #io,out = _printer(color=True, width=500)
     print(t)
     print(p1.total_tt, ' -> ', p2.total_tt,  '  ', *_pct((p2.total_tt-p1.total_tt)/p1.total_tt))
-    #out.pretty(p.stats)
-    #sys.stdout.write(io.getvalue())
-    #p.print_stats()
+
 
 
 

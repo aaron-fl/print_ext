@@ -249,7 +249,7 @@ class Line(Rich):
         super().changed_size()
 
 
-    def _flatten(self, w=0, h=0, **kwargs):
+    def flatten(self, w=0, h=0, **kwargs):
         if self.width - (w or 1e99) <= 0:
             rows = [self.clone(parent=self).justify(w)]
         else:
