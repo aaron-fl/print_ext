@@ -10,7 +10,7 @@ from .testutil import debug_dump
 from .printer_test import _printer
 
 def test_table_x():
-    t = Table(3, -1, 5, tmpl='0', ascii=True)
+    t = Table(3, -1, 5, tmpl='', ascii=True)
     t('test\tx\t')
     t(33,'\t',Fill('a\vb'),'\t',Fill('.'), '\t', 'tは quick brown fox jumped over the lazy dog')
     for line, expect in zip(t.flatten(w=10), ['t~tx33    ', 'aaa.tは~og', 'bbb.      ']):
@@ -19,11 +19,18 @@ def test_table_x():
 
 
 def test_table_x2():
-    t = Table(3, -1, 5, ascii=True, tmpl='0', wrap=True)
+    t = Table(3, -1, 5, ascii=True, tmpl='', wrap=True)
     t('test\tx\t')
     t(33,'\t',Fill('a\vb'),'\t',Fill('.'), '\t', 'The quick brown fox jumped over the lazy dog')
     for line, expect in zip(t.flatten(w=15), ['tesx33         ', 't              ', 'aaa.The quick b', 'bbb.\\ rown fox ','aaa.\\ jumped ov','bbb.\\ er the la','aaa.\\ zy dog   ']):
         assert(line.styled()[0] == expect)
+
+
+def test_table_clone():
+    t = Table(0.0, 1, tmpl='')
+    t('a\tb\tc\td\t')
+    b = t.clone(**t.ctx_local)
+    assert([r.styled()[0] for r in b.flatten()] == ['ab','cd'])
 
 
 def test_table_last_tab():
@@ -48,7 +55,7 @@ def test_table_templates():
 
 
 def test_table_styles():    
-    t = Table(-1, -2, -3, ascii=False, tmpl='0', style='r')
+    t = Table(-1, -2, -3, ascii=False, tmpl='', style='r')
     t.cell('R0', style='1')
     t.cell('C1', style='y')
     t.cell('R1%2C-1', style='_')

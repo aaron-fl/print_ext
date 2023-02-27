@@ -126,7 +126,7 @@ class Table(Flex, tmpl='pad,em'):
     def _cell_ctx_reduce(self, r, c, n_rows, n_cols):
         ctx = reduce(lambda a,b: b.ctx_merge(a, r, c, n_rows, n_cols), self._cell_ctx, Context())
         tmpl = [x.strip() for x in (ctx['tmpl'] or self['tmpl']).split(',') if x.strip()]
-        while '0' in tmpl: tmpl = tmpl[tmpl.index('0')+1:]
+        #while '0' in tmpl: tmpl = tmpl[tmpl.index('0')+1:]
         tmpls = [a for t in tmpl for a in Table._tmpls[t]]
         if tmpls:
             ctx_pre = reduce(lambda a,b: b.ctx_merge(a, r, c, n_rows, n_cols), tmpls, Context())
@@ -189,6 +189,25 @@ class Table(Flex, tmpl='pad,em'):
     def cell(self, rstr, **kwargs):
         self._cell_ctx.append(CellDfn(rstr, **kwargs))
 
+
+    def clone(self, **kwargs):
+        s = self.__class__(**kwargs)
+        s._cells = []
+        for row in self.cells:
+            rcells = []
+            for col in row:
+                if isinstance(col[0], Context):
+                    rcells.append( (col[0].clone(parent=s, **col[0].ctx_local), col[1]) )
+                else:
+                    rcells.append( col )
+            s._cells.append(rcells)
+
+
+        #s._cells = [c.clone(parent=s, **c.ctx_local) for c in self.cells]
+        if self._cells[-1] == []: s._cells.append([])
+        s.cols = list(self.cols)
+        s._cell_ctx = list(self._cell_ctx)
+        return s
 
 
 
