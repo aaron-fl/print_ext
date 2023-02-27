@@ -67,15 +67,6 @@ class Context(metaclass=MetaContext):
         return cvar
 
 
-    @classmethod
-    def _ctx_lookup_class(self, cvar):
-        return self.ctx_class.get(cvar.names[0], None), self
-        #key = cvar.names[0]
-        #for cls in self.__mro__:
-        #    try: return cls.ctx_defaults[key], cls
-        #    except (AttributeError, KeyError): continue
-
-
     def __init__(self, parent=None, **kwargs):
         self.ctx_local = {}
         self.parent = parent
@@ -104,7 +95,8 @@ class Context(metaclass=MetaContext):
                 A key name has not been defined with ``Context.define()``
         '''
         cvars = ctx_vars()
-        vals = tuple(v(self) if isinstance(v,CallableVar) else v for v in (self.ctx_lookup(cvars[k])[0] for k in keys))
+        vals = (self._ctx_lookup(cvar) for cvar in (cvars[k] for k in keys))
+        vals = tuple(v(self) if isinstance(v, CallableVar) else v for v in vals)
         for k, v in set_vals.items():
             k = cvars[k]
             v = None if v == None else v if isinstance(v, CallableVar) else k.canon(v)
@@ -145,55 +137,50 @@ class Context(metaclass=MetaContext):
         return self.__class__(*args, **kwargs)
 
 
-    def ctx_lookup(self, cvar, parent=None):
-        ''' Lookup a single cvar on this object
-        
-        Returns:
-            A tuple (value, defining_object)
-        '''
-        if hasattr(cvar, 'merge'): return self._ctx_lookup_merge(cvar), None
+    def _ctx_lookup(self, cvar):
+        try:
+            v = self._ctx_lookup_merge(cvar.merge, cvar.names[0])
+        except AttributeError:
+            v = self._ctx_lookup_nomerge(cvar.names[0])[0]
+        return v #v(self) if isinstance(v, CallableVar) else v
+
+
+    def _ctx_lookup_nomerge(self, key):
         # No merge needed so just pick the closest value
-        if (k:=cvar.names[0]) in self.ctx_local:
-            return self.ctx_local[k], self # self object has defined a value
+        try:
+            return self.ctx_local[key], True # self object has defined a value
+        except KeyError: pass
         # Our object does not define cvar,  Check parent
         try:
-            val_src = self.parent.ctx_lookup(cvar)
-            if isinstance(val_src[1], Context): return val_src # Our parent context is defining a value
+            val_src = self.parent._ctx_lookup_nomerge(key)
+            if val_src[1]: return val_src # Our parent context is defining a value
             # Check if we have a better default to use
         except AttributeError:
             # Parent may not be defined, or may not be a Context object with ctx_lookup
-            val_src = None, cvar # This is our last ditch effort
+            val_src = None, None # This is our last ditch effort
         # If our class defines cvar then that is better than the parent's class cvar or None
-        return self._ctx_lookup_class(cvar) or val_src
+        return (self.ctx_class.get(key, None), None) or val_src
 
 
-    def ctx_lookup_self(self, cvar):
-        return (self._ctx_lookup_class(cvar) or (None,None))[0], self.ctx_local.get(cvar.names[0], None)
-
-
-    def _ctx_lookup_merge(self, cvar):
+    def _ctx_lookup_merge(self, merge, key):
         vals = []
         obj = self
         while obj != None:
-            vals.insert(0, obj.ctx_lookup_self(cvar))
+            vals.insert(0, (obj.ctx_class.get(key, None), obj.ctx_local.get(key, None)))
             try: obj = obj.parent
             except AttributeError: obj = None
         val = None
-        for v in vals: val = v[0] if val == None else val if v[0] == None else cvar.merge(v[0], val)
-        for v in vals: val = v[1] if val == None else val if v[1] == None else cvar.merge(v[1], val)
+        for v in vals: val = v[0] if val == None else val if v[0] == None else merge(v[0], val)
+        for v in vals: val = v[1] if val == None else val if v[1] == None else merge(v[1], val)
         return val
 
 
     def ctx_flatten(self):
         ''' Return a complete dictionary of context variables
         '''
-        ctx = {}
-        for cvar in set(ctx_vars().values()):
-            val, _ = self.ctx_lookup(cvar)
-            if val == None: continue
-            ctx[cvar.names[0]] = val
-        return ctx
-    
+        vals = ((cvar.names[0], self._ctx_lookup(cvar)) for cvar in set(ctx_vars().values()))
+        return {k:v for k,v in vals if v != None}
+        
 
     def __getitem__(self, key):
         return self.ctx(key)
