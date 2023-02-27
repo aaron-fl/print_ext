@@ -146,4 +146,5 @@ class Printer(Context):
 
 
     def pretty(self, *args, **kwargs):
-        self(pretty(args[0]))
+        for a in args:
+            self(pretty(a, **kwargs))
