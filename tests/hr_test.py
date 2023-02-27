@@ -23,6 +23,7 @@ def test_hr_just_h():
     assert([f.styled() for f in h.flatten(w=9)][0] == ('-[ hi ]--', [SM('y',0,9)]))
     h['just'] = ':'
     assert([f.styled() for f in h.flatten(w=9)][0] == ('--[ hi ]-', [SM('y',0,9)]))
+    print('\n\n\n\n')
     h['just'] = '>'
     assert([f.styled() for f in h.flatten()][0] == ('---[ hi ]-', [SM('y',0,10)]))
 

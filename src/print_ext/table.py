@@ -3,7 +3,7 @@ from math import ceil
 from functools import reduce
 from .flex import Flex
 from .line import StyleCVar
-from .context import Context, CtxProxy, CVar
+from .context import Context, CVar
 from .text import Text
 from .size import Size
 from .borders import Borders, BorderDfn
@@ -119,6 +119,25 @@ class Table(Flex, tmpl='pad,em'):
         return self._cells[:-1] if self._cells[-1] == [] else self._cells
 
 
+
+    def calc_width(self):
+        n_cols = len(self.cols)
+        cells = self.cells
+        n_rows = ceil(len(cells)/n_cols)
+        els = self._cell_instances(n_rows, n_cols)
+        # Calculate max col widths
+        noms = [0]*n_cols
+        for i, el in enumerate(els):
+            c = i%n_cols
+            if noms[c] < (nom:=el['width_nom']): noms[c] = nom
+        sizes = [Size(nom=noms[i], min=self.cols[i]['min'], max=self.cols[i]['max'], rate=self.cols[i]['rate']) for i in range(n_cols)]
+        if len(sizes) != n_cols: raise NotImplementedError()
+        def elide_cols(ecells):
+            return Size(nom=1, rate=0, user=ecells)
+        cols = Size.resize(sizes, 0, wrap=False, elide=elide_cols)[0]
+        return reduce(lambda a,c: a + c.size, cols, 0)
+
+
     def is_open_ended(self):
         return all(c.is_open_ended() for c in self._cell_ctx)
 
@@ -154,18 +173,31 @@ class Table(Flex, tmpl='pad,em'):
         return el
 
 
-    def flatten(self, w=0, h=0, **kwargs):
+    def _cell_instances(self, n_rows, n_cols):
+        if self.__cell_instances != None: return self.__cell_instances
+        self.__cell_instances = []
+        for i, cell in enumerate(self.cells):
+            c = i%n_cols
+            ctx = self._cell_ctx_reduce(i//n_cols, c, n_rows, n_cols)
+            self.__cell_instances.append(self._cell_instance(cell, ctx))
+        return self.__cell_instances
+            
+
+    def changed_size(self):
+        self.__cell_instances = None
+        super().changed_size()
+
+
+    def _flatten(self, w=0, h=0, **kwargs):
         n_cols = len(self.cols)
         cells = self.cells
         n_rows = ceil(len(cells)/n_cols)
+        els = self._cell_instances(n_rows, n_cols)
+        # Calculate max col widths
         noms = [0]*n_cols
-        els = []
-        # Instanciate each el and calculate maximum nominal widths
-        for i, cell in enumerate(cells):
+        for i, el in enumerate(els):
             c = i%n_cols
-            ctx = self._cell_ctx_reduce(i//n_cols, c, n_rows, n_cols)
-            els.append(self._cell_instance(cell, ctx))
-            if noms[c] < (nom:=els[-1]['width_nom']): noms[c] = nom
+            if noms[c] < (nom:=el['width_nom']): noms[c] = nom
         # Calculate sizes
         sizes = [Size(nom=noms[i], min=self.cols[i]['min'], max=self.cols[i]['max'], rate=self.cols[i]['rate']) for i in range(n_cols)]
         if len(sizes) != n_cols: raise NotImplementedError()

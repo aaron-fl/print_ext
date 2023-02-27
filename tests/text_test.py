@@ -14,10 +14,11 @@ def test_text_nl_style():
 
 
 def test_text_clone():
+    p = Text()
     t = Text('a\vb')
-    y = t.clone(parent=3)
+    y = t.clone(parent=p)
     assert(y != t)
-    assert(y.parent == 3)
+    assert(y.parent == p)
     m = Text(t, t)
     assert(str(m) == 'a\\vba\\vb')
 

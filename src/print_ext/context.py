@@ -69,8 +69,11 @@ class Context(metaclass=MetaContext):
 
     def __init__(self, parent=None, **kwargs):
         self.ctx_local = {}
+        self.children = set()
         self.parent = parent
+        if parent != None: parent.children.add(self)
         self.ctx(**kwargs)
+        self.changed_size()
 
 
     def ctx(self, *keys, **set_vals):
@@ -98,13 +101,25 @@ class Context(metaclass=MetaContext):
         vals = (self._ctx_lookup(cvar) for cvar in (cvars[k] for k in keys))
         vals = tuple(v(self) if isinstance(v, CallableVar) else v for v in vals)
         for k, v in set_vals.items():
-            k = cvars[k]
-            v = None if v == None else v if isinstance(v, CallableVar) else k.canon(v)
+            cv = cvars[k]
+            k = cv.names[0]
             if v != None:
-                self.ctx_local[k.names[0]] = v
-            elif k.names[0] in self.ctx_local:
-                del self.ctx_local[k.names[0]]
+                v = v if isinstance(v, CallableVar) else cv.canon(v)
+                self.ctx_local[k] = v
+            elif k in self.ctx_local:
+                del self.ctx_local[k]
+        if set_vals: self.changed_ctx()      
         return None if len(vals) == 0 else vals[0] if len(vals) == 1 else vals
+
+
+    def changed_ctx(self):
+        self.changed_size()
+        for child in self.children:
+            child.changed_ctx()
+
+
+    def changed_size(self):
+        pass
 
 
     def each_child(self):
@@ -120,10 +135,12 @@ class Context(metaclass=MetaContext):
 
 
     def ctx_parent(self, parent):
+        el = self
         if parent.ctx_contains(self) or self.parent != None and id(self.parent) != id(parent):
-            return self.clone(parent=parent, **self.ctx_flatten())
-        self.parent = parent
-        return self
+            el = self.clone(**self.ctx_flatten())
+        el.parent = parent
+        parent.children.add(el)
+        return el
 
 
     def ctx_trace(self):
@@ -192,13 +209,3 @@ class Context(metaclass=MetaContext):
 
     def __delitem__(self, key):
         self.ctx(**{key:None})
-
-
-
-class CtxProxy(Context):
-    def __init__(self, child, **kwargs):
-        self.child = child.ctx_parent(self)
-        super().__init__(**kwargs)
-
-    def flatten(self, **kwargs):
-        yield from self.child.flatten(**kwargs)

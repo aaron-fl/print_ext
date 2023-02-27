@@ -41,20 +41,20 @@ def show(f1, f2):
         v2 = p2.stats[k] if k in p2.stats else v
         t(v[0],'\t')
         if v[1]!=v[0]: t('/', v[1]) 
-        t(*_pct((v2[1] - v[1])/v2[1]), '\t')
+        t(*_pct((v2[1] - v[1])/v[1]), '\t')
         t(' ' , '\t')#t('\br$' if chg < -1 else '' if chg < 3 else '\by;$' if chg < 10 else '\bg!$', f'{chg:.1f}', '\t')
         #  time
         v2p = int(v[2]*1000//v[1])
         if v[2] >= 0.05:
             t(f'{v[2]:.1f}', f'\bdem  {v2p or ""}')
-            t(*_pct((v2[2]-v[2])/v2[2]), '\t')
+            t(*_pct((v2[2]-v[2])/v[2]), '\t')
         else:
             t(' \t')
         # Cumulative time 
         v3p = int(v[3]*1000//v[0])
         if v[3] >= 0.05:
             t(f'{v[3]:.1f}', f'\bdem  {v3p or ""}')
-            t(*_pct((v2[3]-v[3])/v2[3]), '\t')
+            t(*_pct((v2[3]-v[3])/v[3]), '\t')
         else:
             t(' \t')
         # Filename
@@ -70,7 +70,7 @@ def show(f1, f2):
 
     #io,out = _printer(color=True, width=500)
     print(t)
-    print(p1.total_tt, ' -> ', p2.total_tt,  '  ', *_pct((p2.total_tt-p1.total_tt)/p2.total_tt))
+    print(p1.total_tt, ' -> ', p2.total_tt,  '  ', *_pct((p2.total_tt-p1.total_tt)/p1.total_tt))
     #out.pretty(p.stats)
     #sys.stdout.write(io.getvalue())
     #p.print_stats()

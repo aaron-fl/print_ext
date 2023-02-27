@@ -2,6 +2,7 @@ from .borders import Borders, BorderDfn
 from .context import Context
 from .flex import Flex
 from .line import Line, Just
+from tests.testutil import print_ctx_trace
 
 class HR(Flex, border=BorderDfn(l='\n┤│\n\n\n[[\n\n', r='\n├│\n\n\n]]\n\n', t='─-')):
 
@@ -9,16 +10,19 @@ class HR(Flex, border=BorderDfn(l='\n┤│\n\n\n[[\n\n', r='\n├│\n\n\n]]\n\
         return self['width_max'] or (super().calc_width(Flex) + 6)
 
 
-    def flatten(self, w=0, h=0, **kwargs):
-        flat = list(super().flatten(w=0, h=h, **kwargs))
+    def _flatten(self, w=0, h=0, **kwargs):
+        flat = list(super()._flatten(w=0, h=h, **kwargs))
+        print(f"HR flat {self['width_max']} {flat}")
+        print_ctx_trace(self)
+
         if not flat: return []
-        print(f"---------- {w} {flat[0].width}")
         if w and w <= 6:
-            yield from super().flatten(w=w, h=h, **kwargs)
+            yield from super()._flatten(w=w, h=h, **kwargs)
             return
         mw = w or self['width_max'] or (flat[0].width + 6)
+        print(f"   mw {mw}  {mw-6} < {flat[0].width}")
         if mw-6 < flat[0].width:
-            flat = list(super().flatten(w=mw-6, h=h, **kwargs))
+            flat = list(super()._flatten(w=mw-6, h=h, **kwargs))
         innerw = flat[0].width
         ascii, bdr, style = self['ascii'], self['border'], self['border_style']
         just = Just(self['just'],'|~')
@@ -32,7 +36,7 @@ class HR(Flex, border=BorderDfn(l='\n┤│\n\n\n[[\n\n', r='\n├│\n\n\n]]\n\
         box_r = bdr.r[7 if ascii else 2]
         left = just.pad_h(mw-innerw) or 3
         if left == mw-innerw: left = mw-innerw-3
-        #print(f"JUST  {just}  bdr: {style} {bdr}  {left}/{innerw}/{mw}  h:{len(flat)}")
+        print(f"JUST  {just}  bdr: {style} {bdr}  {left}/{innerw}/{mw}  h:{len(flat)}")
         for i,l in enumerate(flat):
             if i == hrv:
                 lhs = bar_l + bar*(left-3) + join_l + ' '

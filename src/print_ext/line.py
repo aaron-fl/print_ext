@@ -138,7 +138,6 @@ class Line(Rich):
             return self
         span = span.trim(-span.width+w) if width < 0 else span.trim(w)
         self.__spans[slice(0,i+1) if width < 0 else slice(i,len(self.__spans))] = [span] if span else []
-        self.changed_size()
         return self
 
 
@@ -246,12 +245,11 @@ class Line(Rich):
 
 
     def changed_size(self):
-    #    self.__width = None
         self.__len = None
         super().changed_size()
 
 
-    def flatten(self, w=0, h=0, **kwargs):
+    def _flatten(self, w=0, h=0, **kwargs):
         if self.width - (w or 1e99) <= 0:
             rows = [self.clone(parent=self).justify(w)]
         else:
