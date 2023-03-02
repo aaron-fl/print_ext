@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "print-ext"
 description = ''
-readme = "README.md"
+readme = "README.rst"
 requires-python = ">=3.7"
 license = "MIT"
 keywords = []
@@ -27,9 +27,9 @@ dependencies = ['wcwidth']
 dynamic = ["version"]
 
 [project.urls]
-Documentation = "https://github.com/unknown/print-ext#readme"
-Issues = "https://github.com/unknown/print-ext/issues"
-Source = "https://github.com/unknown/print-ext"
+Documentation = "https://github.com/aaron-fl/print_ext#readme"
+Issues = "https://github.com/aaron-fl/print_ext/issues"
+Source = "https://github.com/aaron-fl/print_ext"
 
 [tool.hatch.version]
 path = "src/print_ext/__about__.py"
@@ -61,3 +61,12 @@ exclude_lines = [
   "if __name__ == .__main__.:",
   "if TYPE_CHECKING:",
 ]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "/.github",
+  "/docs",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/print_ext"]
