@@ -42,6 +42,31 @@ brown [0] fox
       [2] dog
 
 
+Progress
+--------
+
+>>> files = ['a.txt', 'cats.gif', 'sound.mp3']
+>>> p = print.progress(steps=len(files), ascii=True)
+>>> for f in files:
+...    p('Process \b2$', f, '\b$ ...')
+ ##########-------------------- Process a.txt...
+ ####################---------- Process cats.gif...
+ ############################## Process sound.mp3...
+>>> p('\bg! Processing complete!', done=True)
+ ############################## Processing complete! 
+
+If you don't know how many steps it will take then a spinner is drawn.
+
+>>> p = print.progress()
+>>> for i in range(3):
+...    p('thinking...', i)
+thinking...0
+thinking...1 
+thinking...2 
+>>> p(done=True)
+<BLANKLINE>
+
+
 Multi-line Strings
 ------------------
 

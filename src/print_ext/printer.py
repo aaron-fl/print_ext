@@ -8,6 +8,7 @@ from .pretty import pretty
 from .sgr import SGR
 from .hr import HR
 from .card import Card
+from .progress import Progress
 
 
 def stack_enum(txt, stack):
@@ -65,8 +66,8 @@ class Printer(Context):
         self.stream = stream or sys.stdout
         kwargs = {k:v for k,v in kwargs.items() if v != None}
         if isatty==None:
-            try:    isatty = self.stream.isatty()
-            except: isatty = False
+            try:    self.isatty = self.stream.isatty()
+            except: self.isatty = False
         #print(f"isatty? {isatty}: {self.stream}")
         if 'lang' not in kwargs:
             kwargs['lang'] = locale.getdefaultlocale()[0]
@@ -77,7 +78,7 @@ class Printer(Context):
         kwargs['width_max'] = width
         if 'ascii' not in kwargs:
             kwargs['ascii'] = (locale.getdefaultlocale()[1].lower() != 'utf-8')
-        self.color = isatty if color == None else color
+        self.color = self.isatty if color == None else color
         super().__init__(**kwargs)
         self.blank = 0
 
@@ -119,11 +120,9 @@ class Printer(Context):
         self.stream_out(f.flatten(**kwargs))
 
 
-    def progress(self, *msg, **kwargs):
-        kwargs.setdefault('pad', (1,0))
-        self.ln(*msg, **kwargs)
-        return ProgressBar(ctx=self, **kwargs)
-
+    def progress(self, *args, **kwargs):
+        return Progress(*args, parent=self, **kwargs)
+        
 
     def card(self, *args, **kwargs):
         c = Card(*args, parent=self, **kwargs)
