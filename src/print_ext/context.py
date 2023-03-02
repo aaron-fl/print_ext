@@ -71,7 +71,11 @@ class Context(metaclass=MetaContext):
         self.children = set()
         self.parent = parent
         if parent != None: parent.children.add(self)
-        self.ctx(**kwargs)
+        for k,v in kwargs.items():
+            try:
+                self.ctx(**{k:v})
+            except KeyError:
+                pass
         self.changed_size()
 
 
