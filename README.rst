@@ -8,7 +8,7 @@ Extensions to the print function for printing with a layout engine.
 About
 =====
 
-The standard python print() function is too simple.  It barely provides any functionality more than just using sys.stdout.write().  This library aims to boost the functionaly/complexity ratio of the print() function.
+The standard python print() function is too simple.  It barely provides any functionally more than just using sys.stdout.write().  This library aims to boost the functionally/complexity ratio of the print() function.
 
 This is a set of objects for laying out and styling fixed-width text.  The primary use-case is for pretty-printing text to the console to improve console application user interfaces.  But, it can work equally well for any other stream, such as files.
 
@@ -79,8 +79,8 @@ This is
 continued on
 multiple lines.
 
-In order to support this behavor a comprimse had to be made.
-Any text with a newline \n in it will be treated as a multi-line string with 
+In order to support this behavior a compromise had to be made.
+Any text with a newline `\\n` in it will be treated as a multi-line string with 
 leading and trailing space removed and lines un-indented.
 
 >>> print(' Uh oh\n   this was\n   unexpected!     ')
@@ -88,7 +88,7 @@ Uh oh
 this was
 unexpected!
 
-So replace all your uses of '\n' with '\v' instead.  If you don't have control of the string being displayed then use ``print.print()``, or ``replace('\n','\v')``.
+So replace all your uses of `\\n` with `\\v` instead.  If you don't have control of the string being displayed then use ``print.print()``, or ``replace('\n','\v')``.
 
 >>> print("  this\v works   ", "better")
   this
@@ -105,18 +105,18 @@ This is the same as
 Styles
 ------
 
-Styles can be applied in two ways: as a keyword parameter, and inline using the escape character \b.  
+Styles can be applied in two ways: as a keyword parameter, and inline using the escape character `\\b`.  
 
 >>> print('bold ', '\br red-bold ', 'just-bold', style='!')
 bold red-bold just-bold
 
-Normally the \b syntax applies only to the string it is defined in.  But adding a $ to the end extends
+Normally the `\\b` syntax applies only to the string it is defined in.  But adding a $ to the end extends
 the influence to the end of the call.
 
 >>> print('white \bb$ blue', ' still blue ', '\b_ blue-underlined', ' just-blue')
 white blue still blue blue-underlined just-blue
 
-You can prematurely stop the style with an empty \b or \b$.
+You can prematurely stop the style with an empty `\\b` or `\\b$`.
 
 >>> print('white \b; dim \b\by$ not-dim-yellow ', 'still-yellow \b$ not-yellow')
 white dim not-dim-yellow still-yellow not-yellow
@@ -165,7 +165,7 @@ Tables
 Hello      World
 こんにちは 世界
 
-The positional arguments to the Table() call indicate the widths of the colums.  Negative integers specify a fixed-width column.  Positive integers set the minimum width and a ``flex_rate`` of 1.0.  A floating point value specifies the ``flex_rate``
+The positional arguments to the Table() call indicate the widths of the columns.  Negative integers specify a fixed-width column.  Positive integers set the minimum width and a ``flex_rate`` of 1.0.  A floating point value specifies the ``flex_rate``
 
 The ``tmpl`` keyword argument specifies a base-set of ``cell()`` calls.  See `Table.define_tmpl()`
 
@@ -251,7 +251,7 @@ Design decisions
 
 Mutable objects:
    It is nice to be able to call a widget multiple times ``tbl(...)`` to add more data.
-   This causes some complecations when you try to add some widget to multiple other widgets.
+   This causes some complications when you try to add some widget to multiple other widgets.
 
 Process-global CVars:
    Context variables can be added to any widget even if it isn't aware of that CVar.
@@ -261,7 +261,7 @@ Process-global CVars:
 
 Performance:
    This is designed for human consumption, so it is only fast enough that humans don't get impatient.
-   It favors flexability over performance.
+   It favors flexibility over performance.
 
 
 
