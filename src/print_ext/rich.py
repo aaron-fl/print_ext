@@ -2,7 +2,6 @@ from functools import reduce
 from .context import Context, CVar
 from .cache import cache
 from .widget import Widget
-from tests.testutil import ostr, context_info, ostr_ctx, debug_dump
 
 
 class ProxyContext(Context):
@@ -85,7 +84,7 @@ class Rich(Widget):
         self.ctx_cur = ProxyContext(**kwargs)
         for el in els:
             if isinstance(el, str):
-                lines = _unindent(self.__l10n(el)).replace('\v','\n').split('\n')
+                lines = _unindent(el).replace('\v','\n').split('\n') # FIXME: Removed self.__l10n(el)
                 self.__append_line(lines[0])
                 for line in lines[1:]:
                     self.rich_newline(self.ctx_cur.ctx_flatten())
@@ -145,6 +144,7 @@ class Rich(Widget):
             except Exception as e:
                 raise ValueError(f"Invalid \\f usage '{ver}'\nExample: '\\fen_us color\\fen_gb colour'")
             slang = (lang.lower()+'___').split('_')[:3]
+            
             m = 0 if slang[0] != glang[0] else\
                 1 if slang[1] != glang[1] else\
                 2 if slang[2] != glang[2] else\

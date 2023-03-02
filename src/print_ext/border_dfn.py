@@ -1,9 +1,17 @@
 from functools import reduce
 
 
-def join(code=None, t=' ', r=' ', b=' ', l=' '):
-    code = code or t+r+b+l
-    
+
+class BorderDfn():
+    ''' Define the border by single characters
+
+    \n don't care
+    corners      [c] : TL TR BL BR
+    mask         [m] : T B L R
+    top/bottom [t/b] : X | LXR | LMXR | LMXR1
+    left/right [l/r] : X | TXB | LMXR | TMXB1
+
+    '''
     special = {
         '\\':'╲', '/':'╱', 'X':'╳',
         '|2':'╎', '-2':'╌', '#|2':'╏', '#-2':'╍',
@@ -25,23 +33,23 @@ def join(code=None, t=' ', r=' ', b=' ', l=' '):
         '-= =':'╧', '-=- ':'╞', '-=-=':'╪', '=  -':'╜', '=  =':'╝', '= = ':'║', '= =-':'╢', '= ==':'╣', '=-  ':'╙',
         '=- -':'╨', '=-= ':'╟', '=-=-':'╫', '==  ':'╚', '== =':'╩', '=== ':'╠', '====':'╬', '~  ~':'╯', '~~  ':'╰',
     }
-    return codes.get(code, special.get(code, ' '))
-    
 
-
-class BorderDfn():
-    ''' Define the border by single characters
-
-    \n don't care
-    corners      [c] : TL TR BL BR
-    mask         [m] : T B L R
-    top/bottom [t/b] : X | LXR | LMXR | LMXR1
-    left/right [l/r] : X | TXB | LMXR | TMXB1
-
-    '''
+    codes_inv = dict(zip(codes.values(), codes.keys()))    
     fields = 'clrtbm'
     fld_size = dict(c=8,l=10,r=10,t=10,b=10,m=4)
     dfns = {}
+
+
+    @staticmethod
+    def ext(trbl):
+        return ''.join(BorderDfn.codes_inv.get(c,'    ')[i] for i, c in enumerate(trbl))
+
+
+    @staticmethod
+    def join(code=None, t=' ', r=' ', b=' ', l=' '):
+        code = code or t+r+b+l
+        return BorderDfn.codes.get(code, BorderDfn.special.get(code, ' '))
+
 
     @staticmethod
     def define(name, *args, **kwargs):
@@ -91,6 +99,7 @@ class BorderDfn():
         elif k == 'bl': k,v = 'c', '\n\n'+v[0]+'\n'+v[1]+'\n'
         elif k == 'br': k,v = 'c', '\n\n\n'+v[0]+'\n\n\n'+v[1]
         if len(v) == 2: v = v[0]*(BorderDfn.fld_size[k]//2) + v[1]*(BorderDfn.fld_size[k]//2)
+        if len(v) * 2 == BorderDfn.fld_size[k]: v = v+v
         if k == 'm':
             if not all(c in '01\n' for c in v): raise ValueError(f"Invalid mask value: {k}={v!r}")
         elif k in 'trbl':

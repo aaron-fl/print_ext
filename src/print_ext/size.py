@@ -12,14 +12,31 @@ class Size():
 
     err = _err
     def __init__(self, **kwargs):
+        if 'easy' in kwargs:
+            v = kwargs.pop('easy')
+            if isinstance(v, int):
+                kwargs = dict(min=-v, max=-v, rate=0) if v < 0 else dict(min=v)
+            else:
+                kwargs = dict(rate=v)
         args = dict(max=1e10, rate=1, nom=0, size=0, user=None)
-        args.update({k:v for k,v in kwargs.items() if v != None})
+        args.update(kwargs)
         for k,v in args.items(): setattr(self, k, v)
-        if not self.rate: self.min, self.max, self.rate = self.nom, self.nom, 1
+        if self.rate == None: self.min, self.max, self.rate = self.nom, self.nom, 1
         if 'min' not in args: self.min = min(max(1, self.nom if self.nom < 12 else self.nom/4), self.max)
         if self.min > self.max or self.rate < 0: raise ValueError(f"Invalid parameter {self}")
+        if not self.rate:
+            if self.nom < self.min: self.nom = self.min
+            elif self.nom > self.max: self.nom = self.max
+        #print(f"SIZE {kwargs} -> {self}")
 
-    
+
+    def clone(self, **kwargs):
+        return Size(**{k:kwargs.get(k,self[k]) for k in Size.__ports__})
+
+
+    def __getitem__(self, k):
+        return getattr(self,k)
+
     def dir(self, free):
         if self.size < self.min - _err: return 1 # We must grow because we are below our minimum
         if self.size > self.max + _err: return -1 # We must shrink because we are above our maximum
@@ -31,10 +48,11 @@ class Size():
     
 
     def drate(self, dir, fixed_rate=0):
+        if not self.rate: return 0 # No need to go anywhere
         if dir == 0: return 0
         if dir == -1: return -1.0/self.rate
         if dir == 1:  return self.rate
-        if not fixed_rate: return 0 # No need to go anywhere
+        if not fixed_rate: return 0
         if fixed_rate < 0:
             return self.rate if dir >= 4 else 0
         else:

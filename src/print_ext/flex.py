@@ -4,7 +4,6 @@ from .span import Span
 from .line import Line
 from .size import Size
 from .context import Context, ObjectAttr, CVar, BoolCVar, EnumCVar, FloatCVar
-from tests.testutil import ostr, ostr_ctx, debug_dump
 
 
 Context.define(BoolCVar('flex_reverse'))
@@ -124,8 +123,11 @@ class Flex(Rich):
         wrap = self['flex_wrap']
         els = list(reversed(self.cells) if self['flex_reverse'] else self.cells)
         if not els: return []
-        d = 'width' if (self['flex_dir'] or '-') == '-' else 'height'            
-        cells = [Size(user=e, **dict(zip(Flex._keys, e.ctx(*[f'{d}_{k}' for k in Flex._keys])))) for e in els]
+        d = 'width' if (self['flex_dir'] or '-') == '-' else 'height'
+        def _size(e):
+            args = {k:e.ctx(f'{d}_{k}') for k in Flex._keys}
+            return Size(user=e, **{k:v for k,v in args.items() if v != None})
+        cells = [_size(e) for e in els]
         if d == 'width': return self._flatten_width(cells, wrap, w, h)
         raise NotImplementedError()
 

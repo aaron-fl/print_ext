@@ -5,7 +5,7 @@ from collections import namedtuple
 from .span import Span
 from .context import Context, CVar, BoolCVar, IntCVar
 from .rich import Rich
-from tests.testutil import ostr, context_info, ostr_ctx, debug_dump
+
 
 class Just():
     __slots__ = ('hv','h','v')
@@ -202,7 +202,6 @@ class Line(Rich):
         '''
         tstk = [] # temporary stack
         stack = [] # progressive stack
-        #print("\n________________STYLED_______________", f"'{self}' style:{self['style']}\n", '\n'.join(debug_dump(self)))
         
         def _stack_append(style, s, e):         
             if not style: return   
@@ -234,7 +233,6 @@ class Line(Rich):
             if isinstance(part, Line) and (y:=part.ctx_local.get('style',None)):
                 styles = style_cvar.merge(y, styles) if styles else y
             if isinstance(part, Span):
-                #print(f"_styled {ostr(part)} {s!r} {styles}")
                 _stack_append(styles, len(s), len(s)+len(part))
                 s += str(part)
             else:
@@ -259,11 +257,11 @@ class Line(Rich):
             vbar = '|' if self['ascii'] else '⋮'
             keep = len(rows) - dh - 1
             n = str(dh+1)
-            e = Line(f"{vbar}{n} lines{vbar}\fja {vbar}{n}行{vbar}", style='dem', parent=self)
+            e = Line(f"{vbar}{n} lines{vbar}", style='dem', parent=self)
             if e.width > w: e = Line(style='dem', parent=self).insert(0, f"{vbar}{n}")
             if e.width > w: e = Line(style='dem', parent=self).insert(0, f"{vbar}")
             rows = rows[:keep-keep//2] + [e.justify(w, '|')] + rows[len(rows)-keep//2:]
-        return rows if not h else justify_v(rows, h, Just(self['justify'], '^'), Line(parent=self).insert(0,' '*w))
+        yield from justify_v(rows, h, Just(self['justify'], '^'), Line(parent=self).insert(0,' '*w))
 
 
     def _flatten_no_wrap(self, w):
@@ -307,7 +305,12 @@ class Line(Rich):
 
 
 def justify_v(rows, h, j, line):
+    if not h:
+        yield from rows
+        return
     pad = h - len(rows)
     if pad < 0: raise ValueError(f"{len(rows)} is greater than the given justification height ({h})")
     padt = j.pad_v(pad)
-    return [line.clone(parent=line.parent, **line.ctx_local) for _ in range(padt)] + rows + [line.clone(parent=line.parent, **line.ctx_local) for _ in range(pad-padt)]
+    for _ in range(padt): yield line.clone(parent=line.parent, **line.ctx_local)
+    yield from rows
+    for _ in range(pad-padt): yield line.clone(parent=line.parent, **line.ctx_local)

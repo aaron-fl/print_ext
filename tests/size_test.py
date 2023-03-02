@@ -128,15 +128,12 @@ def test_auto_params():
     '''
     assert(Size(nom=8).min == 8)
     assert(Size(nom=12).min == 3)
-    s = Size(nom=3, rate=0)
+    s = Size(nom=3, rate=None)
     assert( (s.min, s.max) == (3, 3))
     assert(Size(nom=30, min=0).min == 0)
     s = Size(nom=0, min=0, max=0, rate=1)
     assert( (s.min, s.max) == (0,0))
     assert(Size(nom=0).min == 1)
-    s1= Size(nom=None, min=None, max=None)
-    s2 = Size()
-    assert((s1.nom,s1.min,s1.max,s1.rate) == (s2.nom,s2.min,s2.max,s2.rate))
     assert(Size(nom=5, max=2).min == 2)
 
 if __name__=='__main__':

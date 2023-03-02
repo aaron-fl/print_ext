@@ -55,7 +55,7 @@ def test_table_templates():
 
 
 def test_table_styles():    
-    t = Table(-1, -2, -3, ascii=False, tmpl='', style='r')
+    t = Table(-1, -2, -3, ascii=True, tmpl='', style='r')
     t.cell('R0', style='1')
     t.cell('C1', style='y')
     t.cell('R1%2C-1', style='_')
@@ -64,20 +64,22 @@ def test_table_styles():
     t('C0\tC1\tC2\t')
     t('D0\tD1\tD2\t')
     rows = [r.styled() for r in t.flatten()]
-    assert(rows[0] == ('A0A1A2',[SM('r',0,6), SM('1',0,6), SM('y',2,4)]))
-    assert(rows[1] == ('B0B1B2', [SM('r',0,6), SM('y',2,4), SM('_',4,6)]))
-    assert(rows[2] == ('C0C1C2', [SM('r',0,6), SM('y',2,4)]))
-    assert(rows[3] == ('D0D1D2', [SM('r',0,6), SM('y',2,4), SM('_',4,6)]))
+    assert(rows[0] == ('~A1A2 ',[SM('r',0,6), SM('1',0,6), SM('dem',0,1), SM('y',1,3)]))
+    assert(rows[1] == ('~B1B2 ', [SM('r',0,6), SM('dem',0,1), SM('y',1,3), SM('_',3,6)]))
+    assert(rows[2] == ('~C1C2 ', [SM('r',0,6), SM('dem',0,1), SM('y',1,3)]))
+    assert(rows[3] == ('~D1D2 ', [SM('r',0,6), SM('dem',0,1), SM('y',1,3), SM('_',3,6)]))
     assert(len(t) == 12)
     
 
 
 def test_table_play():  
-    o,p = _printer(color=True, ascii=False)  
-    t = Table(-1, -2, -3, tmpl='pad')
+    o,p = _printer(color=True)  
+    t = Table(-1, -2, -3, tmpl='pad', ascii=True)
     print(t['tmpl'])
     t('A0\tA1\tA2\tB0\t\b^r$ B1\tB2\t', 'C0\t\b$ C1\tC2\t')
     t('D0\tD1\tD2\t')
+    assert([s.styled()[0] for s in t.flatten()] == ['~ ~ A2', '~ ~ B2', '~ ~ C2', '~ ~ D2'])
+    assert([s.styled()[0] for s in t.flatten()] == ['~ ~ A2', '~ ~ B2', '~ ~ C2', '~ ~ D2'])
     p(t)
     print(o.getvalue())
 
@@ -153,3 +155,10 @@ def test_table_partial_show():
     ''' Show a portion of the table while building.  The col widths may change, so use fixed col widths
     '''
     pass
+
+
+def test_table_coldfns():
+    t = Table(-3,-4,tmpl='',ascii=True)
+    t('12345\t12345\t')
+    f = [s.styled()[0] for s in t.flatten()][0]
+    assert(f == '1~512~5')

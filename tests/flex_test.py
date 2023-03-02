@@ -3,7 +3,7 @@ from print_ext.flex import Flex
 from print_ext.fill import Fill
 from print_ext.text import Text
 from print_ext.line import Line, SMark as SM
-from .testutil import debug_dump
+from .testutil import debug_dump, styled
 
 def f(o, w,h):
     return ','.join(map(str, o.flatten(w=w, h=h)))
@@ -107,5 +107,4 @@ def test_flex_empty():
 def test_flex_passthrough():
     l = Line('hi')
     f = Flex(l)
-
-    assert(l.flatten(w=10)[0].styled() == f.flatten(w=10)[0].styled())
+    assert(styled(l,w=10) == styled(f,w=10))

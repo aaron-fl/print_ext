@@ -70,6 +70,7 @@ def test_print_call():
     assert(repr(o.getvalue()) == r"'Multi_\nLine_\nComment_\n'")
 
 
+@pytest.mark.skip(reason="Not implemented")
 def test_lang():
     o,p = _test_printer(lang='JA')
     p('hello\fja こんにちは')

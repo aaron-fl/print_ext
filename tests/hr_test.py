@@ -4,13 +4,20 @@ from print_ext.line import SMark as SM
 from print_ext.flex import Flex
 from print_ext.text import Text
 from .printer_test import _printer
-
+from .testutil import flat
 
 def test_hr_hello_pretty():
     o, p = _printer(width=10, ascii=True)
     p.hr('hi')
     assert(o.getvalue() == '--[ hi ]--\n')
 
+
+def test_hr_blank():
+    assert(flat(HR(width_max=10, ascii=True)) == ['----------'])
+    assert(flat(HR(border=('t:abcde'))) == ['acd'])
+    assert(HR().width == 3)
+    assert(HR(width_max=5).width == 5)
+    assert(flat(HR('','',width_max=4,ascii=True)) == ['----'])
 
 
 def test_hr_just_h():

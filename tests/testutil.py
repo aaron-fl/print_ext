@@ -1,3 +1,4 @@
+import io
 
 def oid(obj):
     return 'None' if obj==None else str(hex(id(obj)))[-4:]
@@ -39,3 +40,19 @@ def debug_dump(obj, parent=None, depth=0):
         s += debug_dump(sub, obj, depth + 1)
     return s
 
+
+
+def flat(widget, **kwargs):
+    return [r.styled()[0] for r in widget.flatten(**kwargs)]
+
+
+def styled(widget, **kwargs):
+    return [r.styled() for r in widget.flatten(**kwargs)]
+
+
+def printer(**kwargs):
+    from print_ext.printer import Printer
+    o = io.StringIO()
+    p = Printer(stream=o, **kwargs)
+    return o,p
+   

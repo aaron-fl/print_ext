@@ -1,7 +1,7 @@
 import pytest
 from print_ext.text import Text
 from print_ext.line import Line, SMark as SM
-from .testutil import debug_dump
+from .testutil import debug_dump, styled, flat
 
 
 
@@ -54,24 +54,21 @@ def test_width_height():
 
 def test_text_flatten():
     t = Text('the', ' quick\v', 'brown', text_wrap=True, wrap_mark_from=10)
-    assert('--'.join(map(str, t.flatten(5,0))) == 'the q--uick --brown')
-    t = Text()
-    assert(t.flatten() == [])
-    t = Text('', '', '')
-    assert(t.flatten() == [])
+    assert('--'.join(flat(t, w=5)) == 'the q--uick --brown')
+    assert(flat(Text()) == [])
+    assert(flat(Text('', '', '')) == [])
 
 
 
 def test_text_styled():
     t = Text('\bx$ hi', '\vbye', '\v\by bob', 'coj', style='t', ascii='on')
     print('\n'.join(debug_dump(t)))
-    f = t.flatten(3,4)
-    assert('--'.join(map(str,f)) == 'hi --bye--b~j--   ')
-    assert(f[0].styled() == ('hi ', [SM('t',0,3), SM('x',0,3)]))
-    assert(f[1].styled() == ('bye', [SM('t',0,3), SM('x',0,3)]))
-    assert(f[2].styled() == ('b~j', [SM('t',0,3), SM('x',0,1), SM('y',0,1), SM('dem',1,2), SM('x',2,3)]))
-    print('\n\n\n\n\n\n')
-    assert(f[3].styled() == ('   ', [SM('t',0,3)]))
+    assert(styled(t, w=3, h=4) == [
+        ('hi ', [SM('t',0,3), SM('x',0,3)]),
+        ('bye', [SM('t',0,3), SM('x',0,3)]),
+        ('b~j', [SM('t',0,3), SM('x',0,1), SM('y',0,1), SM('dem',1,2), SM('x',2,3)]),
+        ('   ', [SM('t',0,3)]),
+    ])
 
 
 
@@ -79,8 +76,7 @@ def test_text_e():
     p = Text('parent')
     t= Text('ERROR', parent=p, style='err')
     #print('\n'.join(debug_dump(t)))
-    f = t.flatten()[0]
-    assert(f.styled() == ('ERROR', [SM('err',0,5)]))
+    assert(styled(t) == [('ERROR', [SM('err',0,5)])])
 
 
 
@@ -88,3 +84,11 @@ def test_empty_flattenable():
     s = Text()
     t = Text(s)
     assert(str(t) == '')
+
+
+@pytest.mark.skip(reason='Not Implemented')
+def test_text_lang():
+    s = Text('\berr$', 'Danger\fzh 危险', '\b$ !', "Don't hold plutonium\vwith bare hands.\fzh 不要赤手拿钚。")
+    assert(flat(s) == ["Danger!Don't hold plutonium", 'with bare hands.           '])
+    s = Text('\berr$', 'Danger\fzh 危险', '\b$ !', "Don't hold plutonium\vwith bare hands.\fzh 不要赤\v手拿钚。", lang='zh')
+    assert(flat(s) == ['危险!不要赤','手拿钚。   '])

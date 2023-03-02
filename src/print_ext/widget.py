@@ -37,7 +37,7 @@ class Widget(Context, width_nom=ObjectAttr('width', None), height_nom=ObjectAttr
 
 
     def calc_height(self, klass=None):
-        flat = klass.flatten(self) if klass else self.flatten()
+        flat = list(klass.flatten(self) if klass else self.flatten())
         return len(flat)
 
 
@@ -46,3 +46,6 @@ class Widget(Context, width_nom=ObjectAttr('width', None), height_nom=ObjectAttr
         #self._clear__width()
         #self._clear__height()
     
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__}>"

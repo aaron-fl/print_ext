@@ -7,7 +7,7 @@ from .context import Context, CVar
 from .text import Text
 from .size import Size
 from .borders import Borders, BorderDfn
-from tests.testutil import debug_dump
+
 
 Context.define(CVar('cls'))
 Context.define(CVar('tmpl'))
@@ -68,34 +68,18 @@ class CellDfn():
 
 
 
-class ColDfn():
-    ''' You can define the 
-    '''
-    def __init__(self, val):
-        if isinstance(val, float):
-            val = dict(rate=val)
-        elif isinstance(val, int):
-            if val < 0: val = dict(rate=0, min=-val, max=-val)
-            else: val = dict(rate=1.0, min=val)
-        self.val = val
-
-    def __getitem__(self, key):
-        return self.val.get(key, None)
-
-
-
 class Table(Flex, tmpl='pad,em'):    
     _tmpls = {}
 
     @staticmethod
-    def define(style, *cells):
+    def define_tmpl(style, *cells):
         if style in Table._tmpls and cells != Table._tmpls[style]:
             raise ValueError(f"Table style {style!r} is already defined:\nExisting: {Table._tmpls[style]}\nTrying to set: {cells}")
         Table._tmpls[style] = cells
 
 
     def __init__(self, *args, **kwargs):
-        self.cols = [ColDfn(a) for a in args]
+        self.cols = [Size(easy=a) for a in args]
         self._cell_ctx = []
         super().__init__(**kwargs)
 
@@ -130,7 +114,7 @@ class Table(Flex, tmpl='pad,em'):
         for i, el in enumerate(els):
             c = i%n_cols
             if noms[c] < (nom:=el['width_nom']): noms[c] = nom
-        sizes = [Size(nom=noms[i], min=self.cols[i]['min'], max=self.cols[i]['max'], rate=self.cols[i]['rate']) for i in range(n_cols)]
+        sizes = [col.clone(nom=noms[i]) for i,col in enumerate(self.cols)]
         if len(sizes) != n_cols: raise NotImplementedError()
         def elide_cols(ecells):
             return Size(nom=1, rate=0, user=ecells)
@@ -199,7 +183,7 @@ class Table(Flex, tmpl='pad,em'):
             c = i%n_cols
             if noms[c] < (nom:=el['width_nom']): noms[c] = nom
         # Calculate sizes
-        sizes = [Size(nom=noms[i], min=self.cols[i]['min'], max=self.cols[i]['max'], rate=self.cols[i]['rate']) for i in range(n_cols)]
+        sizes = [col.clone(nom=noms[i]) for i,col in enumerate(self.cols)]
         if len(sizes) != n_cols: raise NotImplementedError()
         #print(f"table flatten {len(cells)} els into table {n_rows}x{n_cols} => {sizes}  :{w}x{h}")
         def elide_cols(ecells):
@@ -243,17 +227,17 @@ class Table(Flex, tmpl='pad,em'):
 
 
 
-Table.define('em', CellDfn('R0', style='em'))
-Table.define('pad',
+Table.define_tmpl('em', CellDfn('R0', style='em'))
+Table.define_tmpl('pad',
     CellDfn('ALL', cls=Borders, border=(' ', 'm:0010')),
     CellDfn('C0', border='m:\n\n0\n'),
 )
-Table.define('sep',
+Table.define_tmpl('sep',
     CellDfn('R0', cls=Borders, border=('b:─-', 'c:\n\n──\n\n--', 'm:\n1\n\n')),
     CellDfn('R0C0', border=('c:\n\n├\n\n\n|\n')),
     CellDfn('R0C-1', border=('c:\n\n\n┤\n\n\n|')),
 )
-Table.define('grid',
+Table.define_tmpl('grid',
     CellDfn('ALL', cls=Borders, border=('-','c:┼┤┴┘++++','m:1010')),
     CellDfn('R0', border=('c:┬┐\n\n++\n\n')),
     CellDfn('C0', border=('c:├\n└\n+\n+\n')),
@@ -262,14 +246,14 @@ Table.define('grid',
     CellDfn('R-1C-1', border=('m:1')),
     CellDfn('R0C0', border=('c:┌\n\n\n+\n\n\n')),
 )
-Table.define('dbl',
+Table.define_tmpl('dbl',
     CellDfn('R-1', cls=Borders, border=('c:\n\n╧╝\n\n##', 'b:═#', 'm:\n1\n\n')),
     CellDfn('C0', cls=Borders, border=('c:╟╤╚╧####', 'l:║#', 'm:\n\n1\n')),
     CellDfn('C-1', cls=Borders, border=('c:\n╢╧╝\n###','r:║#','m:\n\n\n1')),
     CellDfn('R0', cls=Borders, border=('c:╤╗\n\n##\n\n', 't:═#', 'm:1\n\n\n')),
     CellDfn('R0C0', border=('c:╔\n\n\n#\n\n\n')),
 )
-Table.define('kv',
+Table.define_tmpl('kv',
     #CellDfn('ALL', cls=Borders, border=(' ', 'm:0010')),
     CellDfn('C0', border='m:\n\n0\n', style='1', just='>'),
     #CellDfn('C1', cls=Borders, border=('-', 'm:1'), width_rate=1)

@@ -1,5 +1,4 @@
 from .context_cvar import ctx_vars, CallableVar, ObjectAttr, CVar, IntCVar, FloatCVar, BoolCVar, EnumCVar
-from tests.testutil import ostr
 
 
 class MetaContext(type):
@@ -136,10 +135,10 @@ class Context(metaclass=MetaContext):
 
     def ctx_parent(self, parent):
         el = self
-        if parent.ctx_contains(self) or self.parent != None and id(self.parent) != id(parent):
+        if parent!=None and parent.ctx_contains(self) or self.parent != None and id(self.parent) != id(parent):
             el = self.clone(**self.ctx_flatten())
         el.parent = parent
-        parent.children.add(el)
+        if parent!=None: parent.children.add(el)
         return el
 
 

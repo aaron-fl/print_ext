@@ -7,6 +7,7 @@ from .flex import Flex
 from .pretty import pretty
 from .sgr import SGR
 from .hr import HR
+from .card import Card
 
 
 def stack_enum(txt, stack):
@@ -57,6 +58,8 @@ class Printer(Context):
         '3' : 'c,',
     }
 
+    print = print # The legacy print() function
+
     def __init__(self, *, stream=None, color=None, width=None, isatty=None, styles=default_styles, **kwargs):
         self.styles = styles
         self.stream = stream or sys.stdout
@@ -64,6 +67,7 @@ class Printer(Context):
         if isatty==None:
             try:    isatty = self.stream.isatty()
             except: isatty = False
+        #print(f"isatty? {isatty}: {self.stream}")
         if 'lang' not in kwargs:
             kwargs['lang'] = locale.getdefaultlocale()[0]
         kwargs['lang'] = kwargs['lang'].lower()
@@ -121,30 +125,15 @@ class Printer(Context):
         return ProgressBar(ctx=self, **kwargs)
 
 
-    def card(self, *msg, **kwargs):
-        ''' Show a message in a card-like box.
-
-        Use a tab (\\t) to separate the title from the body.
-
-        >>> print.card('\tHello\vWorld!')
-        +--------+
-        | Hello  |
-        | World! |
-        +--------+
-
-        >>> print.card('\berr$', 'Danger\fja 危険', '\b$ !\t', 'Don't hold plutonium\vwith bare hands.') 
-        +-[ Danger! ]----------+
-        | Don't hold plutonium |
-        | with bare hands.     |
-        +----------------------+
-        '''
-        self(Borders(Borders(*msg, **kwargs, border_style='1', border=(' ','m:01'))))
+    def card(self, *args, **kwargs):
+        c = Card(*args, parent=self, **kwargs)
+        self.stream_out(c.flatten(**kwargs))
 
 
     def hr(self, *args, **kwargs):
-        self(HR(*args, **kwargs))
+        h = HR(*args, parent=self, **kwargs)
+        self.stream_out(h.flatten(**kwargs))
 
 
     def pretty(self, *args, **kwargs):
-        for a in args:
-            self(pretty(a, **kwargs))
+        self(*map(pretty, args), **kwargs)

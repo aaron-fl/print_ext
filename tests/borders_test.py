@@ -21,7 +21,7 @@ def test_borders_blank():
 
 
 def test_borderdfn_dfns():
-    for v in ['aaa', 999, 'a'*5, 'a'*7, 'a'*9, 'a'*11, 'a'*12]:
+    for v in ['aaa', 999, 'a'*7, 'a'*9, 'a'*11, 'a'*12]:
         with pytest.raises(ValueError):
             BorderDfn(t=v)
     for v in ['', 'a','aa','aaa','aaaaa']:

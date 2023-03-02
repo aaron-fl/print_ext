@@ -2,7 +2,7 @@
 from .rich import Rich
 from .line import Line, Just, justify_v
 from .span import Span
-from tests.testutil import context_info, ostr, debug_dump, ostr_ctx, oid
+
 
 class Text(Rich):
     ''' This is a list of Lines
@@ -44,7 +44,7 @@ class Text(Rich):
             rows += list(line.flatten(w=w))
         maxw = rows[0].width if len(rows) == 1 else max(*[r.width for r in rows]) if rows and w == 0 else w
         for row in rows: row.justify(maxw)
-        return rows if not h else justify_v(rows, h, Just(self['justify'],'^'), Line(parent=self).insert(0, ' '*maxw))
+        yield from justify_v(rows, h, Just(self['justify'],'^'), Line(parent=self).insert(0, ' '*maxw))
 
 
     def each_child(self):
