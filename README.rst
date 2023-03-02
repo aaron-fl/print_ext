@@ -167,7 +167,7 @@ Hello      World
 
 The positional arguments to the Table() call indicate the widths of the colums.  Negative integers specify a fixed-width column.  Positive integers set the minimum width and a ``flex_rate`` of 1.0.  A floating point value specifies the ``flex_rate``
 
-The ``tmpl`` keyword argument specifies a base-set of ``cell()`` calls.  See :ref:`Table.define_tmpl()`
+The ``tmpl`` keyword argument specifies a base-set of ``cell()`` calls.  See `Table.define_tmpl()`
 
 >>> tbl = Table(-6, 4, 10000.0, tmpl='grid')
 >>> tbl('1\tThe quick \nbrown fox\tApples\t');
@@ -240,12 +240,9 @@ Installation
 .. image:: https://img.shields.io/pypi/v/print-ext.svg
    :target: https://pypi.org/project/print-ext
 
-   PyPI - Version
 
 .. image:: https://img.shields.io/pypi/pyversions/print-ext.svg
    :target: https://pypi.org/project/print-ext
-
-   PyPI - Python Version
 
 
 
