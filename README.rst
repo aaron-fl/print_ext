@@ -22,12 +22,10 @@ Quick Reference
 Use
 ---
 
-.. code-block:: python
-
-   >>> from print_ext import print, Printer
-   >>> print = Printer(width=80) # This is only needed to pass doctests.  Normally just use the print from print_ext.
-   >>> print('\b1 Hello', ' ', '\b2 World')
-   Hello World
+>>> from print_ext import print, Printer
+>>> print = Printer(width=80) # This is only needed to pass doctests.  Normally just use the print from print_ext.
+>>> print('\b1 Hello', ' ', '\b2 World')
+Hello World
 
 
 
