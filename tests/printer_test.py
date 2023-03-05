@@ -107,3 +107,7 @@ def test_printer_default_bold():
     print(o.getvalue())
     assert(repr(o.getvalue()) == repr('the \x1b[1mquick\x1b[0m fox\n'))
     
+
+def test_printer_to_str():
+    from print_ext import print
+    assert(print.to_str('hello', ' \b1 world') == 'hello world\n')

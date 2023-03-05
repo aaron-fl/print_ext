@@ -1,4 +1,4 @@
-import os, sys, locale
+import os, sys, locale, io
 from functools import reduce
 from .borders import Borders
 from .table import Table
@@ -9,6 +9,7 @@ from .sgr import SGR
 from .hr import HR
 from .card import Card
 from .progress import Progress
+
 
 
 def stack_enum(txt, stack):
@@ -74,7 +75,7 @@ class Printer(Context):
         kwargs['lang'] = kwargs['lang'].lower()
         if width == None:
             try:    width = os.get_terminal_size().columns-1
-            except: width = 78
+            except: width = 1000000000000
         kwargs['width_max'] = width
         if 'ascii' not in kwargs:
             kwargs['ascii'] = (locale.getdefaultlocale()[1].lower() != 'utf-8')
@@ -136,3 +137,12 @@ class Printer(Context):
 
     def pretty(self, *args, **kwargs):
         self(*(pretty(a,**kwargs) for a in args), **kwargs)
+
+
+    def to_str(self, *args, **kwargs):
+        saved = self.stream
+        self.stream = io.StringIO()
+        self(*args, **kwargs)
+        val = self.stream.getvalue()
+        self.stream = saved
+        return val
