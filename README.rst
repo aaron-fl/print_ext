@@ -4,9 +4,10 @@ print-ext
 Extensions to the print function for printing with a layout engine.
 
 
-
 About
 =====
+
+The command line is a powerful user interface.  Just by lining things up and using colors judiciously, you can greatly improve the user experience.
 
 The standard python print() function is too simple.  It barely provides any functionally more than just using sys.stdout.write().  This library aims to boost the functionally/complexity ratio of the print() function.
 
