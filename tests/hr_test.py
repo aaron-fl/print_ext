@@ -4,7 +4,7 @@ from print_ext.line import SMark as SM
 from print_ext.flex import Flex
 from print_ext.text import Text
 from .printer_test import _printer
-from .testutil import flat
+from .testutil import flat, printer
 
 def test_hr_hello_pretty():
     o, p = _printer(width=10, ascii=True)
@@ -67,3 +67,9 @@ def test_hr_clone():
     print(h['width_max'])
     assert([str(x) for x in h.flatten()] == ['─┤ bob ├─'])
     assert([str(x) for x in Text(h,h).flatten()] == ['─┤ bob ├──┤ bob ├─'])
+
+
+def test_hr_infinity():
+    o,p = printer(ascii=True)
+    p.hr()
+    assert(o.getvalue() == '---\n')

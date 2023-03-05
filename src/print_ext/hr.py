@@ -2,19 +2,21 @@ from .borders import Borders, BorderDfn
 from .context import Context
 from .flex import Flex
 from .line import Line, Just, justify_v
+from .widget import INFINITY
 
 class HR(Flex, border=BorderDfn(l='\n\n│\n┤\n\n[\n[', r='\n\n│\n├\n\n]\n]', t='─-')):
 
     def calc_width(self):
         w = self['width_max']
-        if not w:
+        if not w or w == INFINITY:
             w = super().calc_width(Flex) + 6
             if w == 6: return 3
         return w
 
 
     def _flatten_empty(self, w, h, ascii, bdr, style):
-        w = w or self['width_max'] or 3
+        w = w or self['width_max']
+        if not w or w == INFINITY: w = 3
         bar = bdr.t[7 if ascii else 2]
         bar_l = bdr.t[5 if ascii else 0]
         bar_r = bdr.t[8 if ascii else 3]
@@ -38,7 +40,7 @@ class HR(Flex, border=BorderDfn(l='\n\n│\n┤\n\n[\n[', r='\n\n│\n├\n\n]\n
         if mw-6 < flat[0].width:
             flat = list(super().flatten(w=mw-6, h=h, **kwargs))
         innerw = flat[0].width
-        just = Just(self['just'],'|~')
+        just = Just(self['just'],'<~')
         hrv = just.pad_v(len(flat)-1)
         bar = bdr.t[7 if ascii else 2]
         bar_l = bdr.t[5 if ascii else 0]

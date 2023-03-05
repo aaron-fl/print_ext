@@ -9,7 +9,7 @@ from .sgr import SGR
 from .hr import HR
 from .card import Card
 from .progress import Progress
-
+from .widget import INFINITY
 
 
 def stack_enum(txt, stack):
@@ -29,7 +29,7 @@ def stack_enum(txt, stack):
             _pop.append(stack.pop(0))
             stk.append(_pop[-1].style) if _pop[-1].style else stk.pop()
         # Advance to the next style boundry
-        b = min(stack[0].s if stack else 1000000000, _pop[-1].e if _pop else 1000000000)
+        b = min(stack[0].s if stack else INFINITY, _pop[-1].e if _pop else INFINITY)
 
 
 
@@ -75,7 +75,7 @@ class Printer(Context):
         kwargs['lang'] = kwargs['lang'].lower()
         if width == None:
             try:    width = os.get_terminal_size().columns-1
-            except: width = 1000000000000
+            except: width = INFINITY
         kwargs['width_max'] = width
         if 'ascii' not in kwargs:
             kwargs['ascii'] = (locale.getdefaultlocale()[1].lower() != 'utf-8')

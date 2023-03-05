@@ -2,6 +2,8 @@ from .cache import cache
 from .context import Context, IntCVar, ObjectAttr
 
 
+INFINITY = 1000000000000
+
 Context.define(IntCVar('width_nom', 'ww'))
 Context.define(IntCVar('width_min', 'wm'))
 Context.define(IntCVar('width_max', 'wx'))
