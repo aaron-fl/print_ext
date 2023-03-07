@@ -237,6 +237,10 @@ Table.define_tmpl('sep',
     CellDfn('R0C0', border=('c:\n\n├\n\n\n|\n')),
     CellDfn('R0C-1', border=('c:\n\n\n┤\n\n\n|')),
 )
+Table.define_tmpl(' ',
+    CellDfn('ALL', cls=Borders, border=(' ','m:1010')),
+    CellDfn('R-1', border=('m:1110')),
+)
 Table.define_tmpl('grid',
     CellDfn('ALL', cls=Borders, border=('-','c:┼┤┴┘++++','m:1010')),
     CellDfn('R0', border=('c:┬┐\n\n++\n\n')),
