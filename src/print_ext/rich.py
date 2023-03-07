@@ -1,6 +1,5 @@
 from functools import reduce
 from .context import Context, CVar
-from .cache import cache
 from .widget import Widget
 
 

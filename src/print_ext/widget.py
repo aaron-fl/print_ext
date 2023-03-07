@@ -1,4 +1,3 @@
-from .cache import cache
 from .context import Context, IntCVar, ObjectAttr
 
 
