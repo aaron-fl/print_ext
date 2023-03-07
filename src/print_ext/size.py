@@ -15,7 +15,7 @@ class Size():
         if 'easy' in kwargs:
             v = kwargs.pop('easy')
             if isinstance(v, int):
-                kwargs = dict(min=-v, max=-v, rate=0) if v < 0 else dict(min=v)
+                kwargs = dict(min=-v, max=-v, rate=0) if v < 0 else dict(rate=v) if v==0 else dict(min=v)
             else:
                 kwargs = dict(rate=v)
         args = dict(max=1e10, rate=1, nom=0, size=0, user=None)
