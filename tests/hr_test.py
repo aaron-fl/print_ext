@@ -4,12 +4,12 @@ from print_ext.line import SMark as SM
 from print_ext.flex import Flex
 from print_ext.text import Text
 from .printer_test import _printer
-from .testutil import flat, printer
+from .testutil import flat, printer, styled
 
 def test_hr_hello_pretty():
-    o, p = _printer(width=10, ascii=True)
-    p.hr('hi')
-    assert(o.getvalue() == '--[ hi ]--\n')
+    #o, p = _printer(width=10, ascii=True)
+    hr = HR('\b2 hi', border_style='1', ascii=True)
+    assert(styled(hr, w=10)[0] == ('-[ hi ]---', [SM('1',0,3), SM('2',3,5), SM('1',5,10)]))
 
 
 def test_hr_blank():
@@ -38,21 +38,21 @@ def test_hr_just_h():
 
 def test_hr_just_v():
     h = HR('a\vbbb\vc\v', ascii=True, width_max=11)
-    assert([f.styled()[0] for f in h.flatten()] == ['  [ a   ]  ', '  [ bbb ]  ','--[ c   ]--','  [     ]  '])
+    assert([f.styled()[0] for f in h.flatten()] == [' [ a   ]   ', ' [ bbb ]   ','-[ c   ]---',' [     ]   '])
     h['just'] = '_'
-    assert([f.styled()[0] for f in h.flatten()] == ['  [ a   ]  ', '  [ bbb ]  ','  [ c   ]  ','--[     ]--'])
-    h['just'] = '^'
-    assert([f.styled()[0] for f in h.flatten()] == ['--[ a   ]--', '  [ bbb ]  ','  [ c   ]  ','  [     ]  '])
-    h['just'] = '-'
+    assert([f.styled()[0] for f in h.flatten()] == [' [ a   ]   ', ' [ bbb ]   ',' [ c   ]   ','-[     ]---'])
+    h['just'] = '|^'
+    assert([f.styled()[0] for f in h.flatten()] == ['--[  a  ]--', '  [ bbb ]  ','  [  c  ]  ','  [     ]  '])
+    h['just'] = '|-'
     h['ascii'] = False
-    assert([f.styled()[0] for f in h.flatten()] == ['  │ a   │  ', '──┤ bbb ├──','  │ c   │  ','  │     │  '])
-    h['just'] = '<'
-    assert([f.styled()[0] for f in h.flatten()] == [' │ a   │   ', ' │ bbb │   ','─┤ c   ├───',' │     │   '])
+    assert([f.styled()[0] for f in h.flatten()] == ['  │  a  │  ', '──┤ bbb ├──','  │  c  │  ','  │     │  '])
+    h['just'] = '>'
+    assert([f.styled()[0] for f in h.flatten()] == ['   │   a │ ', '   │ bbb │ ','───┤   c ├─','   │     │ '])
 
 
 
 def test_hr_small():
-    h = HR('hello world', ascii=True)
+    h = HR('hello world', ascii=True, wrap=False)
     assert([f.styled()[0] for f in h.flatten()] == ['-[ hello world ]-'])
     assert([f.styled()[0] for f in h.flatten(w=11)] == ['-[ he~ld ]-'])
     assert([f.styled()[0] for f in h.flatten(w=7)] == ['-[ ~ ]-'])

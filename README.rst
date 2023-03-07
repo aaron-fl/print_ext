@@ -141,8 +141,8 @@ emphasized de-emphasized primary-accent secondary-accent etc...
 >>> print.hr()
 ────────────────────────────────────────────────────────────────────────────────
 >>> print.hr('\b1 Hello\nWorld', border_style='2')
-                                   │ Hello │
-───────────────────────────────────┤ World ├────────────────────────────────────
+ │ Hello │
+─┤ World ├──────────────────────────────────────────────────────────────────────
 
 Vertical and horizontal justification can also be applied.
 
@@ -179,7 +179,8 @@ The ``tmpl`` keyword argument specifies a base-set of ``cell()`` calls.  See `Ta
 │1    │The quick               │Apples │
 │     │brown fox               │       │
 ├─────┼────────────────────────┼───────┤
-│To…ng│jumped over the lazy dog│Bananas│
+│Too l│jumped over the lazy dog│Bananas│
+│⤷ ong│                        │       │
 └─────┴────────────────────────┴───────┘
 >>> tbl.cell('R0', just='>')
 >>> print(tbl)
@@ -187,9 +188,10 @@ The ``tmpl`` keyword argument specifies a base-set of ``cell()`` calls.  See `Ta
 │    1│              The quick │ Apples│
 │     │               brown fox│       │
 ├─────┼────────────────────────┼───────┤
-│To…ng│jumped over the lazy dog│Bananas│
+│Too l│jumped over the lazy dog│Bananas│
+│⤷ ong│                        │       │
 └─────┴────────────────────────┴───────┘
->>> tbl.cell('C0', just='_', style='y')
+>>> tbl.cell('C0', just='_', style='y', wrap=False)
 >>> print(tbl)
 ┌─────┬────────────────────────┬───────┐
 │     │              The quick │ Apples│
@@ -211,7 +213,7 @@ The first cell is the title and the following cells are the body.  So if you don
 │ World! │
 └────────┘
 >>> print.card('\berr Danger', '!\t', "Don't hold plutonium\vwith bare hands.")
-┌─────┤ Danger! ├──────┐
+┌┤ Danger! ├───────────┐
 │ Don't hold plutonium │
 │ with bare hands.     │
 └──────────────────────┘
@@ -221,11 +223,18 @@ The first cell is the title and the following cells are the body.  So if you don
 Flex
 ----
 
-The default print behavior is that of a horizontal wrapping flex.
+A flex, like a Table, uses tab characters to move from cell to cell.
 
->>> print('The\vquick brown fox\tJumps over the\v lazy', '\t dog')
+>>> print.flex('The\vquick brown fox\tJumps over the\v lazy', '\t dog')
 The            Jumps over the dog
 quick brown fox lazy
+>>> from print_ext import Borders
+>>> right_bdr = Borders(border=('m:0001','-.r'), flex_rate=0)
+>>> print.flex(right_bdr('\berr Error: '), '\t', 'The quick brown\vfox jumped over\vthe lazy\vdog.')
+Error: │The quick brown
+       │fox jumped over
+       │the lazy
+       │dog.
 
 
 

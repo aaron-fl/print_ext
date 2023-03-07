@@ -10,7 +10,7 @@ from .testutil import debug_dump
 from .printer_test import _printer
 
 def test_table_x():
-    t = Table(3, -1, 5, tmpl='', ascii=True)
+    t = Table(3, -1, 5, tmpl='', ascii=True, wrap=False)
     t('test\tx\t')
     t(33,'\t',Fill('a\vb'),'\t',Fill('.'), '\t', 'tは quick brown fox jumped over the lazy dog')
     for line, expect in zip(t.flatten(w=10), ['t~tx33    ', 'aaa.tは~og', 'bbb.      ']):
@@ -55,7 +55,7 @@ def test_table_templates():
 
 
 def test_table_styles():    
-    t = Table(-1, -2, -3, ascii=True, tmpl='', style='r')
+    t = Table(-1, -2, -3, ascii=True, tmpl='', style='r', wrap=False)
     t.cell('R0', style='1')
     t.cell('C1', style='y')
     t.cell('R1%2C-1', style='_')
@@ -74,7 +74,7 @@ def test_table_styles():
 
 def test_table_play():  
     o,p = _printer(color=True)  
-    t = Table(-1, -2, -3, tmpl='pad', ascii=True)
+    t = Table(-1, -2, -3, tmpl='pad', ascii=True, wrap=False)
     print(t['tmpl'])
     t('A0\tA1\tA2\tB0\t\b^r$ B1\tB2\t', 'C0\t\b$ C1\tC2\t')
     t('D0\tD1\tD2\t')
@@ -115,17 +115,6 @@ def test_table_CellDfn():
         assert(not c.matches(*rc, 10,10))
 
 
-@pytest.mark.xfail(reason="can't reproduce")
-def test_border_hilite_bug():
-    o, p = _printer(ascii=True, color=True)
-    t= Table(0,0,tmpl='grid')
-    t('\by a\tb', '\tc\td\t')
-    p(t)
-    print(o.getvalue())
-    assert(o.getvalue() == '')
-    raise(False)
-
-
 
 def test_sudoku():
     o,p = _printer()
@@ -154,11 +143,11 @@ def test_sudoku():
 def test_table_partial_show():
     ''' Show a portion of the table while building.  The col widths may change, so use fixed col widths
     '''
-    pass
+    print.card('\berr Error:\t', *args, **kwargs)
 
 
 def test_table_coldfns():
-    t = Table(-3,-4,tmpl='',ascii=True)
+    t = Table(-3,-4,tmpl='',ascii=True,wrap=False)
     t('12345\t12345\t')
     f = [s.styled()[0] for s in t.flatten()][0]
     assert(f == '1~512~5')

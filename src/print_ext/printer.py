@@ -4,6 +4,7 @@ from .borders import Borders
 from .table import Table
 from .context import Context
 from .flex import Flex
+from .text import Text
 from .pretty import pretty
 from .sgr import SGR
 from .hr import HR
@@ -117,6 +118,11 @@ class Printer(Context):
 
 
     def __call__(self, *args, **kwargs):
+        t = Text(*args, parent=self, **kwargs)
+        self.stream_out(t.flatten(**kwargs))
+
+
+    def flex(self, *args, **kwargs):
         f = Flex(*args, parent=self, **kwargs)
         self.stream_out(f.flatten(**kwargs))
 

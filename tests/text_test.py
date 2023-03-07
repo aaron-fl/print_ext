@@ -61,7 +61,7 @@ def test_text_flatten():
 
 
 def test_text_styled():
-    t = Text('\bx$ hi', '\vbye', '\v\by bob', 'coj', style='t', ascii='on')
+    t = Text('\bx$ hi', '\vbye', '\v\by bob', 'coj', style='t', wrap=False, ascii='on')
     print('\n'.join(debug_dump(t)))
     assert(styled(t, w=3, h=4) == [
         ('hi ', [SM('t',0,3), SM('x',0,3)]),

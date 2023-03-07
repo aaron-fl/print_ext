@@ -5,7 +5,7 @@ from .context import Context
 
 
 
-class Card(Flex, border='-'):
+class Card(Flex, border='-', border_style='dem'):
     ''' Show a message in a card-like box.
 
     Use a tab (\\t) to separate the title from the body.
@@ -18,7 +18,7 @@ class Card(Flex, border='-'):
     └────────┘
     >>> card = Card('\berr$', 'Danger', '\b$ !\\t', "Don't hold plutonium\vwith bare hands.")
     >>> Printer(lang='en')(card) 
-    ┌─────┤ Danger! ├──────┐
+    ┌┤ Danger! ├───────────┐
     │ Don't hold plutonium │
     │ with bare hands.     │
     └──────────────────────┘
@@ -26,7 +26,7 @@ class Card(Flex, border='-'):
     
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
-        self.title = HR(parent=self, just='_', width_max=0) # FIXME: We need a way to stop propigation
+        self.title = HR(parent=self, just='_', width_max=0) # FIXME: We need a way to stop propagation
         self._filling_title = True
         self.body = Borders(border=(' ','m:01'))
         self(*args)
