@@ -101,7 +101,7 @@ class SMark():
 
 
 
-class Line(Rich):
+class Line(Rich, wrap=True):
     ''' A Line is a list of Lines and Spans.
     
     It is a Context so it can style the text.
