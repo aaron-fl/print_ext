@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "print-ext"
-description = ''
+description = 'Extensions to the print function for pretty-printing with a layout engine.'
 readme = "README.rst"
 requires-python = ">=3.7"
 license = "MIT"

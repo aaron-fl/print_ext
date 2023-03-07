@@ -1,7 +1,7 @@
 print-ext
 =========
 
-Extensions to the print function for printing with a layout engine.
+Extensions to the print function for pretty-printing with a layout engine.
 
 
 About
@@ -99,7 +99,6 @@ So replace all your uses of `\\n` with `\\v` instead.  If you don't have control
 >>> print.print('This is', 'the same', 'as\n the old', 'print() function', end='!\n')
 This is the same as
  the old print() function!
-
 
 
 
