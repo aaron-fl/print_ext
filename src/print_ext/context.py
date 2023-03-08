@@ -44,17 +44,6 @@ class Context(metaclass=MetaContext):
         b(a)
     '''
 
-
-    #@classmethod
-    #def defaults(self, **kwargs):
-    #    print(f"DEFAULTS {self}  {kwargs}")
-    #    def _f(cls):
-    #        cvars = ctx_vars()
-    #        cls._clsctx = {cvars[k].names[0]: v if isinstance(v, CallableVar) else cvars[k].canon(v)  for k,v in kwargs.items()}
-    #        return cls
-    #    return _f
-
-
     @classmethod
     def define(self, cvar):
         cvars = ctx_vars()

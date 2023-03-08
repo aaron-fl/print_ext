@@ -77,7 +77,6 @@ class Flex(Rich):
 
 
     def _flatten_width_row(self, cells, w, h):
-        #print(f"_flatten_width_row {w}x{h} : {cells} ")
         flat = [list(c.user.flatten(w=c.size,h=h)) for c in cells]
         if h == 0:
             mh = len(flat[0]) if len(flat) == 1 else max(*[len(x) for x in flat])
@@ -86,10 +85,6 @@ class Flex(Rich):
 
 
     def _flatten_width(self, cells, wrap, w, h):
-        #print(f'_flatten_width wrap?:{wrap}  {w}x{h}')
-        #for cell in cells:
-        #    print(f'   --{cell.user}-- ', cell)
-
         def elide_cols(cells):
             dots = '~' if self['ascii'] else '…'
             if w > 30: dots = f'{dots}{len(cells)}{dots}'
@@ -107,11 +102,9 @@ class Flex(Rich):
         collapse = [z for y in flats for z in y]
         if not h or len(collapse) == h: return collapse
         # Our height doesn't fit, so perform another resize for the cross axis
-        #print("="*80)
         hcells = [Size(nom=len(flat), user=row) for row,flat in zip(rows,flats)]
         col = Size.resize(hcells, h, wrap=False, elide=elide_rows)[0]
         flats = [self._flatten_width_row(c.user, w, c.size) for c in col]
-        #print(f"HEIGHTS", ''.join(f'\n   {c} {c.user}' for c in col))
         collapse = [z for y in flats for z in y]
         assert(len(collapse) == h)
         return collapse

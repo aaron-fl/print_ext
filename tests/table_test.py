@@ -1,11 +1,11 @@
 import pytest, io
 from functools import reduce
-from print_ext.table import Table, CellDfn, BorderDfn
+from print_ext.table import Table, CellDfn
 from print_ext.fill import Fill
 from print_ext.context import Context
 from print_ext.printer import Printer
 from print_ext.line import SMark as SM
-from print_ext.borders import Borders
+from print_ext.borders import Bdr
 from .testutil import debug_dump
 from .printer_test import _printer
 

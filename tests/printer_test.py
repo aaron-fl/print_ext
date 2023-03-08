@@ -111,3 +111,12 @@ def test_printer_default_bold():
 def test_printer_to_str():
     from print_ext import print
     assert(print.to_str('hello', ' \b1 world') == 'hello world\n')
+
+
+def test_legacy_print(capfd):
+    from print_ext import print
+    print.print('hello', 'world', end='x')
+    out, _ = capfd.readouterr()
+    print(out)
+    assert(out == 'hello worldx')
+

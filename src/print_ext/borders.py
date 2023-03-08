@@ -20,7 +20,58 @@ Context.define(BorderCVar('border'))
 
 
 
-class Borders(Flex, border=(1,'-'), border_style='dem'):
+class Bdr(Flex, border=(1,'-'), border_style='dem'):
+
+    special = {
+        '\\':'╲', '/':'╱', 'X':'╳',
+        '|2':'╎', '-2':'╌', '#|2':'╏', '#-2':'╍',
+        '|3':'┆', '-3':'┄', '#|3':'┇', '#-3':'┅',
+        '|4':'┊', '-4':'┈', '#|4':'┋', '#-4':'┉',
+    }
+
+    codes = {
+        '   #':'╸', '   -':'╴', '  # ':'╻', '  ##':'┓', '  #-':'┒', '  - ':'╷', '  --':'┐', '  -=':'╕', '  =-':'╖',
+        '  ==':'╗', '  ~~':'╮', ' #  ':'╺', ' # #':'━', ' # -':'╾', ' ## ':'┏', ' ###':'┳', ' ##-':'┲', ' #- ':'┍',
+        ' #-#':'┯', ' #--':'┮', ' -  ':'╶', ' - -':'─', ' -# ':'┎', ' -##':'┱', ' -- ':'┌', ' --#':'┭', ' ---':'┬',
+        ' -= ':'╓', ' -=-':'╥', ' = =':'═', ' =- ':'╒', ' =-=':'╤', ' == ':'╔', ' ===':'╦', ' ~~ ':'╭', '#   ':'╹',
+        '#  #':'┛', '#  -':'┚', '# # ':'┃', '# ##':'┫', '# #-':'┨', '# - ':'╿', '# -#':'┩', '# --':'┦', '##  ':'┗',
+        '## #':'┻', '## -':'┺', '### ':'┣', '####':'╋', '###-':'╊', '##- ':'┡', '##-#':'╇', '##--':'╄', '#-  ':'┖',
+        '#- #':'┹', '#- -':'┸', '#-##':'╉', '#-#-':'╂', '#-- ':'┞', '#--#':'╃', '#---':'╀', '-   ':'╵', '-  #':'┙',
+        '-  -':'┘', '-  =':'╛', '- # ':'╽', '- ##':'┪', '- #-':'┧', '- - ':'│', '- -#':'┥', '- --':'┤', '- -=':'╡',
+        '-#  ':'┕', '-# #':'┷', '-# -':'┶', '-###':'╈', '-##-':'╆', '-#- ':'┝', '-#-#':'┿', '-#--':'┾', '--  ':'└',
+        '-- #':'┵', '-- -':'┴', '--# ':'┟', '--##':'╅', '--#-':'╁', '--- ':'├', '---#':'┽', '----':'┼', '-=  ':'╘',
+        '-= =':'╧', '-=- ':'╞', '-=-=':'╪', '=  -':'╜', '=  =':'╝', '= = ':'║', '= =-':'╢', '= ==':'╣', '=-  ':'╙',
+        '=- -':'╨', '=-= ':'╟', '=-=-':'╫', '==  ':'╚', '== =':'╩', '=== ':'╠', '====':'╬', '~  ~':'╯', '~~  ':'╰',
+    }
+
+    alias = {
+        '╰':'└', '╮':'┐',  '╯':'┘', '╭':'┌',
+        '╎':'⎢', '┆':'⎢', '┊':'⎢', '╏':'┃', '┇':'┃', '┋':'┃',
+        '╌':'─', '┄':'─', '┈':'─', '╍':'━', '┅':'━', '┉':'━',
+    }
+
+    codes_inv = dict(zip(codes.values(), codes.keys()))   
+
+
+    @staticmethod
+    def ext(trbl):
+        ''' Extend the top,right,bottom,left unicode border characters, return the 4-code for the center.
+        '''
+        return ''.join(Bdr.codes_inv.get(Bdr.alias.get(c,c), '    ')[i] for i, c in enumerate(trbl))
+
+
+    @staticmethod
+    def join(code=None, t=' ', r=' ', b=' ', l=' '):
+        ''' Convert 4-code (trbl) to a unicode border character.
+        ''' 
+        code = code or t+r+b+l
+        return Bdr.codes.get(code, Bdr.special.get(code, ' '))
+
+
+    @staticmethod
+    def dfn(*args, **kwargs):
+        return BorderDfn(*args, **kwargs)
+
 
     def calc_width(self):
         bdr = self['border']
@@ -45,7 +96,6 @@ class Borders(Flex, border=(1,'-'), border_style='dem'):
         lhs = bdr.side_chars(len(flat), bdr.l[5:] if ascii else bdr.l) if bdr.sides[2] else ''
         rhs = bdr.side_chars(len(flat), bdr.r[5:] if ascii else bdr.r) if bdr.sides[3] else ''
         wb = w or (flat[0].width if flat else 0) + int(bdr.sides[2]) + int(bdr.sides[3])
-        #print(f'borders flatten {w}x{h}  bdwh:{bw}x{bh}  {child_size}  ->  bw:{wb} {lhs!r} {rhs!r}')
         if bdrh and (txt:=bdr.top_line(wb, ascii)):
             yield Line(parent=self, style=style).insert(0, txt)
         if not lhs and not rhs:

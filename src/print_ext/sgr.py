@@ -63,7 +63,6 @@ class SGR():
         if self['fg'] and (reset or self['fg'] != other['fg']): codes.append(self['fg'])
         if self['bg'] and (reset or self['bg'] != other['bg']): codes.append(self['bg'])
         if reset: codes.insert(0,0)
-        #print(f" other: {other.flags}  ->  self: {self.flags}  codes:{codes}")
         return '\033[' + ';'.join(map(str,codes)) + 'm'
 
 

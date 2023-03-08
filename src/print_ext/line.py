@@ -207,12 +207,10 @@ class Line(Rich, wrap=True):
             if not style: return   
             popped = []
             while tstk and tstk[-1].e <= s: popped.insert(0,tstk.pop()) # Pop old ones
-            #print(f"## {''.join(style)}:{s}-{e} {tstk} :: {popped}")
             # Match as many parents as we can
             for same in range(len(style), -1, -1):
                 if style[:same] == tuple(y.style for y in tstk[-same:]): break
             style = style[same:]
-            #print(f"    {same} matched parents")
             # Extend popped styles
             i = 0
             for p, y in zip(popped, style[:]):
@@ -222,8 +220,6 @@ class Line(Rich, wrap=True):
                 p.e = e
                 tstk.append(p)
                 style = style[1:]
-            #print(f"    {i} extended")
-            #print(f"    {style}  new")
             for y in style:
                 tstk.append(SMark(y, s, e))
                 stack.append(tstk[-1])

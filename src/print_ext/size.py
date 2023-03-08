@@ -27,7 +27,6 @@ class Size():
         if not self.rate:
             if self.nom < self.min: self.nom = self.min
             elif self.nom > self.max: self.nom = self.max
-        #print(f"SIZE {kwargs} -> {self}")
 
 
     def clone(self, **kwargs):
@@ -93,7 +92,6 @@ class Size():
 def _elide(cells, size, elide):
     ''' If sizes overflows then replace the middle portion with the Size returned from elide()'''
     zeros = any(not x.size and x.min for x in cells)
-    #print(f"_elide {sum([c.size for c in cells])} -> {size} zeros?:{zeros}", ''.join(f'\n  {c} {c.user}' for c in cells))
     if sum([c.size for c in cells]) <= size and not zeros: return cells
     total = cells[0].size
     r = [1, len(cells)]
@@ -105,7 +103,6 @@ def _elide(cells, size, elide):
     if r[0] != r[1]:
         cells = _resize_no_wrap(cells[:r[0]] + [elide(cells[r[0]:r[1]])] + cells[r[1]:], size)
         print(f"ELIDED {cells}")
-    #print(f"    {r} {total}", ''.join(f'\n  {c} {c.user}' for c in cells))
     total = sum([c.size for c in cells])
     if total > size: cells[0].size += size - total
     assert(cells[0].size > 0), f"The elided cell is to big. {cells}"
@@ -131,7 +128,6 @@ def _resize_wrap(cells, size):
     ci = 0
     rows = []
     while cells:
-        #print(f"_resize_wrap size:{size}", ''.join(f'\n  {c} {c.user}' for c in cells))
         _resize_no_wrap(cells, size)
         if len(rows): _resize_no_wrap(rows[-1], size)
         rows.append([cells.pop(0)])
@@ -148,7 +144,6 @@ def _resize_no_wrap(cells, size):
     while True:
         sizes = [c.size for c in cells]   # The current actual sizes of each cell
         free = size - sum(sizes) # The amount of free space to fill
-        #print(f"_resize_no_wrap {sizes}/{size}  free:{free}")
         dirs = [c.dir(free) for c in cells] # <=1 we must change,  >1 We might be able to change if needed
         if not any(dirs): return _round(cells, size) # Everyone is static
         rates = [c.drate(d) if d <= 1 else 0 for c,d in zip(cells, dirs)] # At what rate MUST each cell grow or shrink?

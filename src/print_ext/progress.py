@@ -60,7 +60,6 @@ class Progress(Context):
     def __call__(self, *args, done=False, style=None, **kwargs):
         self.bar.step()
         done = done or not self.parent.isatty
-        #print(f'bar {self.bar!r}')
         line = Line(*args, parent=self, **kwargs)
         if not done or not isinstance(self.bar, Spinner):
             line.insert(0,' ').insert(0, self.bar, style=style).insert(0, ' ')

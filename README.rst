@@ -152,6 +152,14 @@ Vertical and horizontal justification can also be applied.
  │ 1...      │
  │ Blastoff! │
 
+The lines drawn are taken from the ``border`` context variable.
+
+>>> print.hr('BOLD', border=('#','-.rl'))
+━┥ BOLD ┝━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+>>> print.hr("This\vall looks right\vjustified", border=' ', just='>')
+                                                                         This
+                                                              all looks right
+                                                                    justified
 
 
 Tables
@@ -228,9 +236,9 @@ A flex, like a Table, uses tab characters to move from cell to cell.
 >>> print.flex('The\vquick brown fox\tJumps over the\v lazy', '\t dog')
 The            Jumps over the dog
 quick brown fox lazy
->>> from print_ext import Borders
->>> right_bdr = Borders(border=('m:0001','-.r'), flex_rate=0)
->>> print.flex(right_bdr('\berr Error: '), '\t', 'The quick brown\vfox jumped over\vthe lazy\vdog.')
+>>> from print_ext import Bdr
+>>> bdr = Bdr(border=('m:0001','-.r'), flex_rate=0)
+>>> print.flex(bdr('\berr Error: '), '\t', 'The quick brown\vfox jumped over\vthe lazy\vdog.')
 Error: │The quick brown
        │fox jumped over
        │the lazy

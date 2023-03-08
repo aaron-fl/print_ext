@@ -1,10 +1,10 @@
-from .borders import Borders, BorderDfn
+from .borders import Bdr
 from .context import Context
 from .text import Text
 from .line import Line, Just, justify_v
 from .widget import INFINITY
 
-class HR(Text, border=BorderDfn(l='\n\n│\n┤\n\n[\n[', r='\n\n│\n├\n\n]\n]', t='─-')):
+class HR(Text, border=Bdr.dfn(l='\n\n│\n┤\n\n[\n[', r='\n\n│\n├\n\n]\n]', t='─-')):
 
     def calc_width(self):
         w = self['width_max']
@@ -36,7 +36,6 @@ class HR(Text, border=BorderDfn(l='\n\n│\n┤\n\n[\n[', r='\n\n│\n├\n\n]\n
             yield from super().flatten(w=mw, h=h, **kwargs)
             return
         mw = mw or (flat[0].width + 6)
-        #print(f"   mw {mw}  {mw-6} < {flat[0].width}")
         if mw-6 < flat[0].width:
             flat = list(super().flatten(w=mw-6, h=h, **kwargs))
         innerw = flat[0].width
@@ -45,13 +44,14 @@ class HR(Text, border=BorderDfn(l='\n\n│\n┤\n\n[\n[', r='\n\n│\n├\n\n]\n
         bar = bdr.t[7 if ascii else 2]
         bar_l = bdr.t[5 if ascii else 0]
         bar_r = bdr.t[8 if ascii else 3]
-        join_l = bdr.l[9 if ascii else 4]
         box_l = bdr.l[7 if ascii else 2]
-        join_r = bdr.r[9 if ascii else 4]
+        join_l = Bdr.join(Bdr.ext(box_l+' '+box_l+bar))
+        if join_l == ' ': join_l = box_l
         box_r = bdr.r[7 if ascii else 2]
+        join_r = Bdr.join(Bdr.ext(box_r+bar+box_r+' '))
+        if join_r == ' ': join_r = box_r
         left = just.pad_h(mw-innerw) or 3
         if left == mw-innerw: left = mw-innerw-3
-        #print(f"JUST  {just}  bdr: {style} {bdr}  {left}/{innerw}/{mw}  h:{len(flat)}")
         for i,l in enumerate(flat):
             if i == hrv:
                 lhs = bar_l + bar*(left-3) + join_l + ' '

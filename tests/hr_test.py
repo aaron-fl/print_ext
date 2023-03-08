@@ -77,3 +77,27 @@ def test_hr_infinity():
     o.truncate()
     p.hr()
     assert(o.getvalue() == '---\n')
+
+
+def test_hr_joins():
+    o,p = printer(ascii=False,color=False)
+    p.hr('hi', border='=')
+    assert(o.getvalue() == '═╣ hi ╠═\n')
+
+
+def test_hr_joins_ascii():
+    o,p = printer(ascii=True,color=False)
+    p.hr('hi', border='=')
+    assert(o.getvalue() == '=# hi #=\n')
+
+
+def test_hr_joins_bold():
+    o,p = printer(ascii=False, color=False)
+    p.hr('hi', border=('#', '-.rl'))
+    assert(o.getvalue() == '━┥ hi ┝━\n')
+
+
+def test_hr_joins_double_space():
+    o,p = printer(ascii=False, color=False)
+    p.hr('hi', border=('=', ' .rl'))
+    assert(o.getvalue() == '═  hi  ═\n')

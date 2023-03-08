@@ -1,6 +1,5 @@
 import os, sys, locale, io
 from functools import reduce
-from .borders import Borders
 from .table import Table
 from .context import Context
 from .flex import Flex

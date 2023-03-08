@@ -6,7 +6,7 @@ from .line import StyleCVar
 from .context import Context, CVar
 from .text import Text
 from .size import Size
-from .borders import Borders, BorderDfn
+from .borders import Bdr
 
 
 Context.define(CVar('cls'))
@@ -185,7 +185,6 @@ class Table(Flex, tmpl='pad,em'):
         # Calculate sizes
         sizes = [col.clone(nom=noms[i]) for i,col in enumerate(self.cols)]
         if len(sizes) != n_cols: raise NotImplementedError()
-        #print(f"table flatten {len(cells)} els into table {n_rows}x{n_cols} => {sizes}  :{w}x{h}")
         def elide_cols(ecells):
             return Size(nom=1, rate=0, user=ecells)
         cols = Size.resize(sizes, w, wrap=False, elide=elide_cols)[0]
@@ -229,20 +228,20 @@ class Table(Flex, tmpl='pad,em'):
 
 Table.define_tmpl('em', CellDfn('R0', style='em'))
 Table.define_tmpl('pad',
-    CellDfn('ALL', cls=Borders, border=(' ', 'm:0010')),
+    CellDfn('ALL', cls=Bdr, border=(' ', 'm:0010')),
     CellDfn('C0', border='m:\n\n0\n'),
 )
 Table.define_tmpl('sep',
-    CellDfn('R0', cls=Borders, border=('b:─-', 'c:\n\n──\n\n--', 'm:\n1\n\n')),
+    CellDfn('R0', cls=Bdr, border=('b:─-', 'c:\n\n──\n\n--', 'm:\n1\n\n')),
     CellDfn('R0C0', border=('c:\n\n├\n\n\n|\n')),
     CellDfn('R0C-1', border=('c:\n\n\n┤\n\n\n|')),
 )
 Table.define_tmpl(' ',
-    CellDfn('ALL', cls=Borders, border=(' ','m:1010')),
+    CellDfn('ALL', cls=Bdr, border=(' ','m:1010')),
     CellDfn('R-1', border=('m:1110')),
 )
 Table.define_tmpl('grid',
-    CellDfn('ALL', cls=Borders, border=('-','c:┼┤┴┘++++','m:1010')),
+    CellDfn('ALL', cls=Bdr, border=('-','c:┼┤┴┘++++','m:1010')),
     CellDfn('R0', border=('c:┬┐\n\n++\n\n')),
     CellDfn('C0', border=('c:├\n└\n+\n+\n')),
     CellDfn('C-1', border=('m:1011')),
@@ -251,14 +250,14 @@ Table.define_tmpl('grid',
     CellDfn('R0C0', border=('c:┌\n\n\n+\n\n\n')),
 )
 Table.define_tmpl('dbl',
-    CellDfn('R-1', cls=Borders, border=('c:\n\n╧╝\n\n##', 'b:═#', 'm:\n1\n\n')),
-    CellDfn('C0', cls=Borders, border=('c:╟╤╚╧####', 'l:║#', 'm:\n\n1\n')),
-    CellDfn('C-1', cls=Borders, border=('c:\n╢╧╝\n###','r:║#','m:\n\n\n1')),
-    CellDfn('R0', cls=Borders, border=('c:╤╗\n\n##\n\n', 't:═#', 'm:1\n\n\n')),
+    CellDfn('R-1', cls=Bdr, border=('c:\n\n╧╝\n\n##', 'b:═#', 'm:\n1\n\n')),
+    CellDfn('C0', cls=Bdr, border=('c:╟╤╚╧####', 'l:║#', 'm:\n\n1\n')),
+    CellDfn('C-1', cls=Bdr, border=('c:\n╢╧╝\n###','r:║#','m:\n\n\n1')),
+    CellDfn('R0', cls=Bdr, border=('c:╤╗\n\n##\n\n', 't:═#', 'm:1\n\n\n')),
     CellDfn('R0C0', border=('c:╔\n\n\n#\n\n\n')),
 )
 Table.define_tmpl('kv',
-    #CellDfn('ALL', cls=Borders, border=(' ', 'm:0010')),
+    #CellDfn('ALL', cls=Bdr, border=(' ', 'm:0010')),
     CellDfn('C0', border='m:\n\n0\n', style='1', just='>'),
-    #CellDfn('C1', cls=Borders, border=('-', 'm:1'), width_rate=1)
+    #CellDfn('C1', cls=Bdr, border=('-', 'm:1'), width_rate=1)
 )
