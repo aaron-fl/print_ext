@@ -70,6 +70,10 @@ def test_hr_clone():
 
 
 def test_hr_infinity():
-    o,p = printer(ascii=True)
+    o,p = printer(ascii=True,color=False)
+    p(HR('\b1 hi'))
+    assert(o.getvalue() == '-[ hi ]-\n')
+    o.seek(0)
+    o.truncate()
     p.hr()
     assert(o.getvalue() == '---\n')

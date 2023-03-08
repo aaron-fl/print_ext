@@ -1,15 +1,15 @@
 from .borders import Borders, BorderDfn
 from .context import Context
-from .flex import Flex
+from .text import Text
 from .line import Line, Just, justify_v
 from .widget import INFINITY
 
-class HR(Flex, border=BorderDfn(l='\n\n│\n┤\n\n[\n[', r='\n\n│\n├\n\n]\n]', t='─-')):
+class HR(Text, border=BorderDfn(l='\n\n│\n┤\n\n[\n[', r='\n\n│\n├\n\n]\n]', t='─-')):
 
     def calc_width(self):
         w = self['width_max']
         if not w or w == INFINITY:
-            w = super().calc_width(Flex) + 6
+            w = super().calc_width(Text) + 6
             if w == 6: return 3
         return w
 
@@ -27,11 +27,11 @@ class HR(Flex, border=BorderDfn(l='\n\n│\n┤\n\n[\n[', r='\n\n│\n├\n\n]\n
     def flatten(self, w=0, h=0, **kwargs):
         flat = list(super().flatten(w=0, h=h, **kwargs))
         ascii, bdr, style = self['ascii'], self['border'], self['border_style']
-        #print(f"HR flat {self['width_max']} {flat}")
         if not any(flat):
             yield from self._flatten_empty(w,h, ascii, bdr, style)
             return
         mw = w or self['width_max']
+        if mw == INFINITY: mw = 0
         if mw and mw < 7:
             yield from super().flatten(w=mw, h=h, **kwargs)
             return
