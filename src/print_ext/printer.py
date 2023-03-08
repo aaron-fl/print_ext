@@ -70,7 +70,6 @@ class Printer(Context):
         if isatty==None:
             try:    self.isatty = self.stream.isatty()
             except: self.isatty = False
-        #print(f"isatty? {isatty}: {self.stream}")
         if 'lang' not in kwargs:
             kwargs['lang'] = locale.getdefaultlocale()[0]
         kwargs['lang'] = kwargs['lang'].lower()
@@ -87,17 +86,15 @@ class Printer(Context):
 
     def format_out(self, txt, styles):
         stripped = txt.rstrip()
+        if not self.color: return stripped
         s = ''
         sgr_prev = SGR()
         for t,stk in stack_enum(txt, styles):
             sgrs = [SGR(self.styles.get(y,y)) for y in stk] or [SGR()]
-            #print(f'format_out {repr(stripped[:len(t)])} {stk} -> {sgrs}')
-            if self.color:
-                sgr_next = reduce(lambda a,b: a+b, sgrs)
-                code = sgr_next.diff(sgr_prev)
-                #print(f"         {sgr_prev} -> {sgr_next}  {repr(code)}")
-                s += code
-                sgr_prev = sgr_next
+            sgr_next = reduce(lambda a,b: a+b, sgrs)
+            code = sgr_next.diff(sgr_prev)
+            s += code
+            sgr_prev = sgr_next
             s += stripped[:len(t)]
             stripped = stripped[len(t):]
         if sgr_prev: s += '\033[0m'
@@ -115,6 +112,11 @@ class Printer(Context):
             new_blank = 0 if line else new_blank + 1
             self.stream.write(line+'\n')
         self.blank += new_blank
+
+
+    def each_line(self, *args, **kwargs):
+        t = Text(*args, parent=self, **kwargs)
+        yield from t.flatten(**kwargs)
 
 
     def __call__(self, *args, **kwargs):
