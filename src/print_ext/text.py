@@ -18,7 +18,7 @@ class Text(Rich):
         self.__lines.append([self.__lines.pop()] if self.__lines else [])
         while self.rich_stream:
             el, ctx = self.rich_stream.pop(0)
-            if el == '\v':
+            if el == '\n':
                 self.__lines.append([])
                 continue
             if isinstance(el, Line):
@@ -58,7 +58,7 @@ class Text(Rich):
     
 
     def __str__(self):
-        return '\\v'.join(map(str, self.lines))
+        return '\\n'.join(map(str, self.lines))
 
 
     def __repr__(self):

@@ -119,7 +119,7 @@ class Line(Rich, wrap=True):
     def spans(self):
         while self.rich_stream:
             el, ctx = self.rich_stream.pop(0)
-            if el == '\v': el = '\\n'
+            if el == '\n': el = '\\n'
             self.insert(-1, el, **ctx)
         return self.__spans
 

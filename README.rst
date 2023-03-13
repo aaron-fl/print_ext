@@ -68,39 +68,6 @@ thinking...2
 <BLANKLINE>
 
 
-Multi-line Strings
-------------------
-
->>> print(''' This is
-...     continued on
-...     multiple lines.
-...     
-...     ''')
-This is
-continued on
-multiple lines.
-
-In order to support this behavior a compromise had to be made.
-Any text with a newline `\\n` in it will be treated as a multi-line string with 
-leading and trailing space removed and lines un-indented.
-
->>> print(' Uh oh\n   this was\n   unexpected!     ')
-Uh oh
-this was
-unexpected!
-
-So replace all your uses of `\\n` with `\\v` instead.  If you don't have control of the string being displayed then use ``print.print()``, or ``replace('\n','\v')``.
-
->>> print("  this\v works   ", "better")
-  this
- works   better
-
-
->>> print.print('This is', 'the same', 'as\n the old', 'print() function', end='!\n')
-This is the same as
- the old print() function!
-
-
 
 Styles
 ------
@@ -156,7 +123,7 @@ The lines drawn are taken from the ``border`` context variable.
 
 >>> print.hr('BOLD', border=('#','-.rl'))
 ━┥ BOLD ┝━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
->>> print.hr("This\vall looks right\vjustified", border=' ', just='>')
+>>> print.hr("This\nall looks right\njustified", border=' ', just='>')
                                                                          This
                                                               all looks right
                                                                     justified
@@ -215,12 +182,12 @@ Cards
 
 The first cell is the title and the following cells are the body.  So if you don't want a title then tab quickly to the body.
 
->>> print.card('\tHello\vWorld!')
+>>> print.card('\tHello\nWorld!')
 ┌────────┐
 │ Hello  │
 │ World! │
 └────────┘
->>> print.card('\berr Danger', '!\t', "Don't hold plutonium\vwith bare hands.")
+>>> print.card('\berr Danger', '!\t', "Don't hold plutonium\nwith bare hands.")
 ┌┤ Danger! ├───────────┐
 │ Don't hold plutonium │
 │ with bare hands.     │
@@ -233,12 +200,12 @@ Flex
 
 A flex, like a Table, uses tab characters to move from cell to cell.
 
->>> print.flex('The\vquick brown fox\tJumps over the\v lazy', '\t dog')
+>>> print.flex('The\nquick brown fox\tJumps over the\n lazy', '\t dog')
 The            Jumps over the dog
 quick brown fox lazy
 >>> from print_ext import Bdr
 >>> bdr = Bdr(border=('m:0001','-.r'), flex_rate=0)
->>> print.flex(bdr('\berr Error: '), '\t', 'The quick brown\vfox jumped over\vthe lazy\vdog.')
+>>> print.flex(bdr('\berr Error: '), '\t', 'The quick brown\nfox jumped over\nthe lazy\ndog.')
 Error: │The quick brown
        │fox jumped over
        │the lazy

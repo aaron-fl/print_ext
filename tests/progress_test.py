@@ -23,5 +23,11 @@ def test_spinner():
     print('---')
 
 
+async def many_bars():
+    pass
+    #go to the (start of the) previous line: \033[F
+    #move along ncols: \03[{ncols}G
+
+
 if __name__ == '__main__':
-    asyncio.run(test_spinner())
+    asyncio.run(many_bars())

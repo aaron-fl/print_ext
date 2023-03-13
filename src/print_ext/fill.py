@@ -13,7 +13,7 @@ class Fill(Text, width_min=0, height_min=0):
         ['  ', '  ']
         >>> [str(l) for l in Fill('abc').flatten(5,2)]
         ['abcab', 'abcab']
-        >>> [str(l) for l in Fill('a\v','b').flatten(3,3)]
+        >>> [str(l) for l in Fill('a\\n','b').flatten(3,3)]
         ['aaa', 'bbb', 'aaa']
     
     more

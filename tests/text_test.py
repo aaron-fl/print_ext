@@ -20,10 +20,11 @@ def test_text_clone():
     assert(y != t)
     assert(y.parent == p)
     m = Text(t, t)
-    assert(str(m) == 'a\\vba\\vb')
+    assert(str(m) == 'a\\nba\\nb')
 
 
 
+@pytest.mark.skip(reason="Disabled auto-unindent")
 def test_text_nl():
     def _f(*args, w=0, h=0, **kwargs): return ','.join(map(str, Text(*args, **kwargs).flatten(w=w,h=h)))
     assert(_f('''  The

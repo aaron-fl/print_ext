@@ -106,6 +106,7 @@ def test_append_non_string():
 
 
 
+@pytest.mark.skip(reason="Disabled auto-unindent")
 def test_cleandoc():
     assert(str(RichTest('''   The quick
         brown
@@ -119,6 +120,11 @@ def test_cleandoc():
 
 def test_tabs():
     assert(str(RichTest('a\tb\v\tc\t\v')) == 'a,\t,b,\n,\t,c,\t,\n')
+
+
+
+@pytest.mark.skip(reason="Disabled auto-unindent")
+def test_tabs_unindent():
     assert(str(RichTest('a\n\t\tb\tc\n\t\td\n\t\t\te\n\t\t')) == 'a,\n,b,\t,c,\n,d,\n,\t,e')
     assert(str(RichTest('\t\n\ta \n\tb\t\n\tc\t\t\n\t\n\t\t\t')) == 'a ,\n,b,\t,\n,c,\t,\t')
 

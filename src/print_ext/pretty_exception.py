@@ -29,7 +29,7 @@ class PrettyException(Exception):
     def pretty(self):
         t = Text(self.__class__.__name__)
         if self.__dict__:
-            t('\v',pretty(self.__dict__))
+            t('\n',pretty(self.__dict__))
         return t
 
 

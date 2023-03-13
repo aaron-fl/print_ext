@@ -63,11 +63,6 @@ def test_print_call():
     o,p = _test_printer()
     p('x','y','\b3 z     ')
     assert(o.getvalue() == 'xy_z3\n')
-    o,p = _test_printer()
-    p(''' Multi
-    Line        
-    Comment''')
-    assert(repr(o.getvalue()) == r"'Multi_\nLine_\nComment_\n'")
 
 
 @pytest.mark.skip(reason="Not implemented")

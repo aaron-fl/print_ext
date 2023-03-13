@@ -39,19 +39,9 @@ class Rich(Widget):
             `\\b=r!`  This doesn't get auto-popped.  Pop it manually with 
             `\\b=`    Pop an attribute.  It is ok to pop too many times.
 
-        \\v
-            If a string contains \\n then it is first processed with cleandoc() which removes
-            preceeding whitespace and common whitespace on each line.  \\v dosen't trigger
-            this logic and gets replaced as \\n
-
         \\t
             Triggers a move to the next 'cell'.  The meaning of 'cell' is defined by the baseclass.
 
-        \\f
-            Separate language versions
-            \\f<lang>_<region>_<dialect>
-
-            Region and dialect are optional.  The best language match will be selected.
             
     :Usage:
         Subclass this and then implement the following methods as a state machine.
@@ -83,7 +73,8 @@ class Rich(Widget):
         self.ctx_cur = ProxyContext(**kwargs)
         for el in els:
             if isinstance(el, str):
-                lines = _unindent(el).replace('\v','\n').split('\n') # FIXME: Removed self.__l10n(el)
+                lines = el.replace('\v','\n').split('\n')
+                #lines = _unindent(el).replace('\v','\n').split('\n') # FIXME: Removed self.__l10n(el) and unindent
                 self.__append_line(lines[0])
                 for line in lines[1:]:
                     self.rich_newline(self.ctx_cur.ctx_flatten())
@@ -162,7 +153,7 @@ class Rich(Widget):
         
 
     def rich_newline(self, ctx):
-        self.rich_stream.append(('\v',ctx))
+        self.rich_stream.append(('\n',ctx))
     
 
     def rich_tab(self, ctx):
