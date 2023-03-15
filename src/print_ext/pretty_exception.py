@@ -1,4 +1,4 @@
-from .printer import Flattener
+from .printer import Flattener, Printer
 from .text import Text
 from .table import Table
 from .pretty import pretty
@@ -25,10 +25,11 @@ class PrettyException(Exception):
 
 
     def pretty(self):
-        msg = (': ', self.msg) if hasattr(self, 'msg') else ('', )
-        t = Text(self.__class__.__name__, *msg)
-        if self.__dict__:
-            t('\n',pretty({k:v for k,v in self.__dict__.items() if k != 'msg'}))
-        return t
-
-
+        p = Printer()
+        if hasattr(self, 'msg'):
+            p(self.msg)
+        else:
+            p(self.__class__.__name__)
+        vars = {k:v for k,v in self.__dict__.items() if k != 'msg'}
+        if vars: p.pretty(vars, pad=-1)
+        return p

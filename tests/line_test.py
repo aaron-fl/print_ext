@@ -378,5 +378,11 @@ def test_justify_v():
     assert(r[5].styled() == ('xxx', []))
 
 
-if __name__=='__main__':
-    test_extend_two()
+@pytest.mark.xfail()
+def test_line_justify_right():
+    assert(0)
+
+
+@pytest.mark.xfail()
+def test_line_obey_width_max():
+    assert(0)

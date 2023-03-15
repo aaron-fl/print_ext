@@ -60,24 +60,44 @@ class Printer(Context):
         self._widgets.append(widget)
 
 
-    def __call__(self, *args, **kwargs):
+    def padded(self, pad, el):
+        if isinstance(pad,int):
+            pad = (-pad, 0) if pad < 0 else (pad,pad)
+        padl, padr = pad
+        while (padl:=padl-1) >= 0:
+            self.append(Text(' ',parent=self))
+        self.append(el)
+        while (padr:=padr-1) >= 0:
+            self.append(Text(' ',parent=self))
+        return self
+
+
+    def __call__(self, *args, pad=0, **kwargs):
+        if pad: return self.padded(pad, Text(*args, parent=self, **kwargs))
         self.append(Text(*args, parent=self, **kwargs))
-    
+        return self
 
-    def flex(self, *args, **kwargs):
+
+    def flex(self, *args, pad=0, **kwargs):
+        if pad: return self.padded(pad, Flex(*args, parent=self, **kwargs))
         self.append(Flex(*args, parent=self, **kwargs))
+        return self
 
 
-    def card(self, *args, **kwargs):
+    def card(self, *args, pad=0, **kwargs):
+        if pad: return self.padded(pad, Card(*args, parent=self, **kwargs))
         self.append(Card(*args, parent=self, **kwargs))
+        return self
 
 
-    def hr(self, *args, **kwargs):
+    def hr(self, *args, pad=0, **kwargs):
+        if pad: return self.padded(pad, HR(*args, parent=self, **kwargs))
         self.append(HR(*args, parent=self, **kwargs))
+        return self
 
 
-    def pretty(self, *args, **kwargs):
-        self(*(pretty(a,**kwargs) for a in args), **kwargs)
+    def pretty(self, *args, pad=0, **kwargs):
+        return self(*(pretty(a,**kwargs) for a in args), pad=pad, **kwargs)
 
 
     def calc_width(self):
@@ -104,6 +124,9 @@ class Printer(Context):
     def flatten_fix_height(self, *, w, h, **kwargs):
         raise NotImplementedError()
 
+
+    def __repr__(self):
+        return f"<Printer>"
 
 
 

@@ -27,6 +27,7 @@ Use
 >>> print = Flattener(width=80) # This is only needed to pass doctests.  Normally just use the print from print_ext.
 >>> print('\b1 Hello', ' ', '\b2 World')
 Hello World
+<Printer>
 
 
 
@@ -41,6 +42,8 @@ brown [0] fox
       [1] jumped over
              the lazy
       [2] dog
+<Printer>
+
 
 
 Progress
@@ -76,17 +79,22 @@ Styles can be applied in two ways: as a keyword parameter, and inline using the 
 
 >>> print('bold ', '\br red-bold ', 'just-bold', style='!')
 bold red-bold just-bold
+<Printer>
 
 Normally the `\\b` syntax applies only to the string it is defined in.  But adding a $ to the end extends
 the influence to the end of the call.
 
 >>> print('white \bb$ blue', ' still blue ', '\b_ blue-underlined', ' just-blue')
 white blue still blue blue-underlined just-blue
+<Printer>
+
 
 You can prematurely stop the style with an empty `\\b` or `\\b$`.
 
 >>> print('white \b; dim \b\by$ not-dim-yellow ', 'still-yellow \b$ not-yellow')
 white dim not-dim-yellow still-yellow not-yellow
+<Printer>
+
 
 The color codes are: blac(k), (r)ed, (g)reen, (y)ellow, (b)lue, (m)agenta, (c)yan, (w)hite.  bold(!), not-bold(.), dim(;), not-dim(,), underline(_), reset(0)
 
@@ -94,12 +102,14 @@ Background colors are prefixed with a (^).
 
 >>> print('\bg^c; dim-green-text-on-cyan \b0 back-to-normal ', '\b;! bold-dim \b, bold-not-dim')
 dim-green-text-on-cyan back-to-normal bold-dim bold-not-dim
+<Printer>
+
 
 Instead of specifying styles directly, it is recommended to use named styles: err, warn, em, dem, 1, 2, 3.
 
 >>> print('\bem emphasized ', '\bdem de-emphasized ', '\b1 primary-accent ', '\b2 secondary-accent ', '\b3 etc...')
 emphasized de-emphasized primary-accent secondary-accent etc...
-
+<Printer>
 
 
 <hr/>
@@ -107,9 +117,11 @@ emphasized de-emphasized primary-accent secondary-accent etc...
 
 >>> print.hr()
 ────────────────────────────────────────────────────────────────────────────────
+<Printer>
 >>> print.hr('\b1 Hello\nWorld', border_style='2')
  │ Hello │
 ─┤ World ├──────────────────────────────────────────────────────────────────────
+<Printer>
 
 Vertical and horizontal justification can also be applied.
 
@@ -118,15 +130,19 @@ Vertical and horizontal justification can also be applied.
  │ 2...      │
  │ 1...      │
  │ Blastoff! │
+<Printer>
 
 The lines drawn are taken from the ``border`` context variable.
 
 >>> print.hr('BOLD', border=('#','-.rl'))
 ━┥ BOLD ┝━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<Printer>
 >>> print.hr("This\nall looks right\njustified", border=' ', just='>')
                                                                          This
                                                               all looks right
                                                                     justified
+<Printer>
+
 
 
 Tables
@@ -139,6 +155,7 @@ Tables
 >>> print(tbl)
 Hello      World
 こんにちは 世界
+<Printer>
 
 The positional arguments to the Table() call indicate the widths of the columns.  Negative integers specify a fixed-width column.  Positive integers set the minimum width and a ``flex_rate`` of 1.0.  A floating point value specifies the ``flex_rate``
 
@@ -157,6 +174,7 @@ The ``tmpl`` keyword argument specifies a base-set of ``cell()`` calls.  See `Ta
 │Too l│jumped over the lazy dog│Bananas│
 │⤷ ong│                        │       │
 └─────┴────────────────────────┴───────┘
+<Printer>
 >>> tbl.cell('R0', just='>')
 >>> print(tbl)
 ┌─────┬────────────────────────┬───────┐
@@ -166,6 +184,7 @@ The ``tmpl`` keyword argument specifies a base-set of ``cell()`` calls.  See `Ta
 │Too l│jumped over the lazy dog│Bananas│
 │⤷ ong│                        │       │
 └─────┴────────────────────────┴───────┘
+<Printer>
 >>> tbl.cell('C0', just='_', style='y', wrap=False)
 >>> print(tbl)
 ┌─────┬────────────────────────┬───────┐
@@ -174,6 +193,7 @@ The ``tmpl`` keyword argument specifies a base-set of ``cell()`` calls.  See `Ta
 ├─────┼────────────────────────┼───────┤
 │To…ng│jumped over the lazy dog│Bananas│
 └─────┴────────────────────────┴───────┘
+<Printer>
 
 
 
@@ -187,12 +207,13 @@ The first cell is the title and the following cells are the body.  So if you don
 │ Hello  │
 │ World! │
 └────────┘
+<Printer>
 >>> print.card('\berr Danger', '!\t', "Don't hold plutonium\nwith bare hands.")
 ┌┤ Danger! ├───────────┐
 │ Don't hold plutonium │
 │ with bare hands.     │
 └──────────────────────┘
-
+<Printer>
 
 
 Flex
@@ -203,6 +224,7 @@ A flex, like a Table, uses tab characters to move from cell to cell.
 >>> print.flex('The\nquick brown fox\tJumps over the\n lazy', '\t dog')
 The            Jumps over the dog
 quick brown fox lazy
+<Printer>
 >>> from print_ext import Bdr
 >>> bdr = Bdr(border=('m:0001','-.r'), flex_rate=0)
 >>> print.flex(bdr('\berr Error: '), '\t', 'The quick brown\nfox jumped over\nthe lazy\ndog.')
@@ -210,7 +232,7 @@ Error: │The quick brown
        │fox jumped over
        │the lazy
        │dog.
-
+<Printer>
 
 
 Installation

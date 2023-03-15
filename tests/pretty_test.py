@@ -15,6 +15,20 @@ class Beautiful():
         return t 
 
 
+class MyIter():
+    def __iter__(self):
+        self.i = 0
+        return self
+
+    def __next__(self):
+        if self.i == 4: raise StopIteration()
+        self.i += 1
+        return ['zero','one','two','three','four'][self.i-1]
+
+    def __repr__(self):
+        return 'MyIter'
+
+
 @pytest.mark.skip()
 def test_pretty_list():
     o,p = printer(color=True)
@@ -35,13 +49,13 @@ def test_pretty_beautiful():
 def test_pretty_exception():
     o,p = printer()
     try:
-        raise PrettyException(a=[1,2,3], b={'x':'hi','Hello': 'World'}, msg='Something wicked')
+        raise PrettyException(a=MyIter(), b={'x':'hi','Hello': 'World'}, msg='Something wicked')
     except PrettyException as e:
         p(pretty(e))
         print(o.getvalue())
         assert(str(e) == 'Something wicked')
-        assert(repr(e) == "PrettyException(a=[1, 2, 3], b={'x': 'hi', 'Hello': 'World'}, msg='Something wicked')")
-        assert(o.getvalue() == 'PrettyException: Something wicked\na [0] 1\n  [1] 2\n  [2] 3\nb     x hi\n  Hello World\n')
+        assert(repr(e) == "PrettyException(a=MyIter, b={'x': 'hi', 'Hello': 'World'}, msg='Something wicked')")
+        assert(o.getvalue() == 'Something wicked\n\na <0> zero\n  <1> one\n  <2> two\n  <3> three\nb     x hi\n  Hello World\n')
     
 
 def test_pretty_exception_no_pretty():

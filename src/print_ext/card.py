@@ -16,12 +16,14 @@ class Card(Flex, border='-', border_style='dem'):
     │ Hello  │
     │ World! │
     └────────┘
+    <Printer>
     >>> card = Card('\berr$', 'Danger', '\b$ !\\t', "Don't hold plutonium\\nwith bare hands.")
     >>> Flattener(lang='en')(card) 
     ┌┤ Danger! ├───────────┐
     │ Don't hold plutonium │
     │ with bare hands.     │
     └──────────────────────┘
+    <Printer>
     '''
     
     def __init__(self, *args, **kwargs):
