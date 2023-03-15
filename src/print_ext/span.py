@@ -32,6 +32,12 @@ class Span():
                 self.length += len(span.text)
                 self.spans.append(span)
                 self._merge_two(len(self.spans) - 2)
+    
+
+    def is_blank(self):
+        for span in self.spans:
+            if span.text.strip(): return False
+        return True
         
 
     def trim(self, width):

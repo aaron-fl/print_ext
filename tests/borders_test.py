@@ -2,7 +2,7 @@ import pytest
 from print_ext.borders import Bdr
 from print_ext.line import SMark as SM
 from print_ext.flex import Flex
-from .printer_test import _printer
+from .testutil import printer, styled
 
 
 def test_Bdr_hi():
@@ -12,6 +12,15 @@ def test_Bdr_hi():
     assert(rows[1] == ('│hi│',[SM('y',0,4), SM('dem',0,1),SM('dem',3,4)]))
     assert(rows[2] == ('└──┘',[SM('y',0,4), SM('dem',0,4)]))
 
+
+def test_bdr_topl_multi():
+    b = Bdr('aa\nbbb', ascii=True, border=('-','m:1010'))
+    assert(styled(b, h=4) == [
+        ('+---', [SM('dem',0,4)]),
+        ('|aa ', [SM('dem',0,1)]),
+        ('|bbb', [SM('dem',0,1)]),
+        ('|   ', [SM('dem',0,1)]),
+    ])
 
 
 def test_Bdr_blank():
@@ -46,7 +55,7 @@ def test_borderdfn_fld_select():
 
 
 def test_border_pretty():
-    o,p = _printer(color=False, ascii=True)
+    o,p = printer(color=False, ascii=True)
     f = Flex('hi\vthere\vbob')
     assert((f.width, f.height) == (5,3))
     p(Bdr('hi\vthere\vbob', border=Bdr.dfn('-',m='01'), style='1'))

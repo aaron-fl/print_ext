@@ -1,9 +1,10 @@
 import pytest
 from print_ext.flex import Flex
+from print_ext.borders import Bdr
 from print_ext.fill import Fill
 from print_ext.text import Text
 from print_ext.line import Line, SMark as SM
-from .testutil import debug_dump, styled
+from .testutil import debug_dump, styled, printer
 
 def f(o, w,h):
     return ','.join(map(str, o.flatten(w=w, h=h)))
@@ -108,3 +109,12 @@ def test_flex_passthrough():
     l = Line('hi')
     f = Flex(l)
     assert(styled(l,w=10) == styled(f,w=10))
+
+
+
+def test_flex_with_border():
+    o,p = printer()
+    f = Flex('1\t', Bdr('The quick \nbrown fox'), '\t', 'x\t')
+    p(f)
+    print(o.getvalue())
+    assert(o.getvalue() == '1┌──────────┐x\n │The quick │\n │brown fox │\n └──────────┘\n')

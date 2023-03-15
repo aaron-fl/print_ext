@@ -1,9 +1,10 @@
 import pytest, io
-from print_ext.printer import Printer, stack_enum
+from print_ext.printer import Flattener, stack_enum
 from print_ext.line import SMark as SM
+from .testutil import printer
 
 
-class PrinterTest(Printer):
+class PrinterTest(Flattener):
     def format_out(self, txt, styles):
         print(f'format_out "{txt}"  styles:{styles}')
         stripped = txt.rstrip()
@@ -21,14 +22,6 @@ def _test_printer(**kwargs):
     return o,p
 
 
-
-def _printer(**kwargs):
-    o = io.StringIO()
-    p = Printer(stream=o, **kwargs)
-    return o,p
-   
-
-
 def test_stack_enum():
     def _tst(*args):
         sout = ''
@@ -43,19 +36,6 @@ def test_stack_enum():
     assert(_tst('abcdef', [SM('0',0,6), SM('1',3,6)]) == 'abc[0]def[01]')
     assert(_tst('abcdef', [SM('0',0,6), SM('1',2,5)]) == 'ab[0]cde[01]f[0]')
     assert(_tst('abcdef', [SM('0',0,6), SM('1',0,6)]) == 'abcdef[01]')
-
-
-
-def test_stream_out():
-    o,p = _test_printer()
-    p.stream_out([33, 44, 'bob    ', ' cob', ''])
-    assert(repr(o.getvalue()) == r"'33\n44\nbob\n cob\n\n'")
-    p.stream_out(['x\n\n','',''])
-    assert(repr(o.getvalue()) == r"'33\n44\nbob\n cob\n\nx\n\n\n'")
-    p.stream_out(['','','y',''])
-    assert(repr(o.getvalue()) == r"'33\n44\nbob\n cob\n\nx\n\n\ny\n\n'")
-    p.stream_out(['','','z'])
-    assert(repr(o.getvalue()) == r"'33\n44\nbob\n cob\n\nx\n\n\ny\n\n\nz\n'")
 
 
 
@@ -79,25 +59,25 @@ def test_color():
     
 
 def test_printer_default_styles():
-    o,p = _printer(color=True)
+    o,p = printer(color=True)
     p('the ', '\bem-_ Quick\vbrown', ' fox')
     print(o.getvalue())
     assert(repr(o.getvalue()) == repr('the \x1b[1;4mQuick\x1b[0m\n\x1b[1;4mbrown\x1b[0m fox\n'))
-    o,p = _printer()
+    o,p = printer()
     p('the ', '\br_ Quick\vbrown', ' fox')
     print(o.getvalue())
     assert(repr(o.getvalue()) == repr('the Quick\nbrown fox\n'))
 
 
 def test_printer_default_underscore():
-    o,p = _printer(color=True)
+    o,p = printer(color=True)
     p('the \br_$ quick ','\b!\b;$ brown', ' fox')
     print(o.getvalue())
     assert(repr(o.getvalue()) == repr('the \x1b[4;31mquick \x1b[1;2mbrown\x1b[0;2;4;31m fox\x1b[0m\n'))
     
 
 def test_printer_default_bold():
-    o,p = _printer(color=True)
+    o,p = printer(color=True)
     p('the ', '\b! quick',' fox')
     print(o.getvalue())
     assert(repr(o.getvalue()) == repr('the \x1b[1mquick\x1b[0m fox\n'))

@@ -6,8 +6,8 @@ from .hr import HR
 from .line import Line
 from .pretty import pretty
 from .pretty_exception import PrettyException
-from .printer import Printer
+from .printer import Flattener, Printer
 from .table import Table, CellDfn
 from .text import Text
 from . import context
-print = Printer()
+print = Flattener()

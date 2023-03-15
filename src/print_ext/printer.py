@@ -4,9 +4,11 @@ from .table import Table
 from .context import Context
 from .flex import Flex
 from .text import Text
+from .line import Just
 from .pretty import pretty
 from .sgr import SGR
 from .hr import HR
+from .rich import Rich
 from .card import Card
 from .progress import Progress
 from .widget import INFINITY
@@ -48,6 +50,64 @@ def _stack_enum(txt, stack):
 
 
 class Printer(Context):
+    def __init__(self, **kwargs):
+        self._widgets = []
+        self.blank = 0
+        super().__init__(**kwargs)
+
+
+    def append(self, widget):
+        self._widgets.append(widget)
+
+
+    def __call__(self, *args, **kwargs):
+        self.append(Text(*args, parent=self, **kwargs))
+    
+
+    def flex(self, *args, **kwargs):
+        self.append(Flex(*args, parent=self, **kwargs))
+
+
+    def card(self, *args, **kwargs):
+        self.append(Card(*args, parent=self, **kwargs))
+
+
+    def hr(self, *args, **kwargs):
+        self.append(HR(*args, parent=self, **kwargs))
+
+
+    def pretty(self, *args, **kwargs):
+        self(*(pretty(a,**kwargs) for a in args), **kwargs)
+
+
+    def calc_width(self):
+        return max(0,0, *map(w.width, self._widgets))
+
+
+    def flatten(self, w=0, h=0, blank=0, **kwargs):
+        self.blank = blank
+        if h != 0: return flatten_fix_height(w=w, h=h, **kwargs)
+        if not w and Just(self['justify'],'<').h != '<':
+            w = self.width # We need to be able to right/center justify to our natural width
+        for widget in self._widgets:
+            new_blank = 0
+            for line in widget.flatten(w=w, **kwargs):
+                if (is_blank:=line.is_blank()) and self.blank:
+                    self.blank -= 1
+                    continue
+                self.blank = 0
+                new_blank = new_blank+1 if is_blank else 0
+                yield line
+            self.blank += new_blank
+
+
+    def flatten_fix_height(self, *, w, h, **kwargs):
+        raise NotImplementedError()
+
+
+
+
+class Flattener(Printer):
     ''' This is an object for aliasing the print function.
     '''
     default_styles = {
@@ -100,51 +160,22 @@ class Printer(Context):
         return s
 
 
-    def stream_out(self, lines):
-        new_blank = 0
-        for line in lines:
-            line = self.format_out(*line.styled()) if hasattr(line, 'styled') else str(line).rstrip()
-            if not line and self.blank:
-                self.blank -= 1
-                continue
-            self.blank = 0
-            new_blank = 0 if line else new_blank + 1
-            self.stream.write(line+'\n')
-        self.blank += new_blank
+    def append(self, widget):
+        super().append(widget)
+        for line in self.flatten(blank=self.blank):
+            self.stream.write(self.format_out(*line.styled()))
+            self.stream.write('\n')
+        self._widgets = []
 
 
-    def each_line(self, *args, **kwargs):
-        t = Text(*args, parent=self, **kwargs)
-        yield from t.flatten(**kwargs)
-
-
-    def __call__(self, *args, **kwargs):
-        t = Text(*args, parent=self, **kwargs)
-        self.stream_out(t.flatten(**kwargs))
-
-
-    def flex(self, *args, **kwargs):
-        f = Flex(*args, parent=self, **kwargs)
-        self.stream_out(f.flatten(**kwargs))
+    #def each_line(self, *args, **kwargs):
+    #    t = Text(*args, parent=self, **kwargs)
+    #    yield from t.flatten(**kwargs)
 
 
     def progress(self, *args, **kwargs):
         return Progress(*args, parent=self, **kwargs)
         
-
-    def card(self, *args, **kwargs):
-        c = Card(*args, parent=self, **kwargs)
-        self.stream_out(c.flatten(**kwargs))
-
-
-    def hr(self, *args, **kwargs):
-        h = HR(*args, parent=self, **kwargs)
-        self.stream_out(h.flatten(**kwargs))
-
-
-    def pretty(self, *args, **kwargs):
-        self(*(pretty(a,**kwargs) for a in args), **kwargs)
-
 
     def to_str(self, *args, **kwargs):
         saved = self.stream

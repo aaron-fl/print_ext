@@ -79,7 +79,7 @@ class Flex(Rich):
     def _flatten_width_row(self, cells, w, h):
         flat = [list(c.user.flatten(w=c.size,h=h)) for c in cells]
         if h == 0:
-            mh = len(flat[0]) if len(flat) == 1 else max(*[len(x) for x in flat])
+            mh = max(len(flat[0]), *[len(x) for x in flat])
             flat = [f if len(f) == mh else list(c.user.flatten(w=c.size,h=mh)) for f, c in zip(flat, cells)]
         return [Line(*f, parent=self).justify(w) for f in zip(*flat)]
 

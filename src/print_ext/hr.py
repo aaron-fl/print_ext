@@ -9,7 +9,7 @@ class HR(Text, border=Bdr.dfn(l='\n\n│\n┤\n\n[\n[', r='\n\n│\n├\n\n]\n]'
     def calc_width(self):
         w = self['width_max']
         if not w or w == INFINITY:
-            w = super().calc_width(Text) + 6
+            w = super().calc_width() + 6
             if w == 6: return 3
         return w
 
@@ -25,7 +25,7 @@ class HR(Text, border=Bdr.dfn(l='\n\n│\n┤\n\n[\n[', r='\n\n│\n├\n\n]\n]'
         
 
     def flatten(self, w=0, h=0, **kwargs):
-        flat = list(super().flatten(w=0, h=h, **kwargs))
+        flat = list(super().flatten(w=super().calc_width(), h=h, **kwargs))
         ascii, bdr, style = self['ascii'], self['border'], self['border_style']
         if not any(flat):
             yield from self._flatten_empty(w,h, ascii, bdr, style)

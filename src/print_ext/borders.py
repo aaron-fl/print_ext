@@ -1,5 +1,5 @@
 from .rich import Rich
-from .flex import Flex
+from .text import Text
 from .line import Line, StyleCVar
 from .context import Context, CVar
 from .border_dfn import BorderDfn
@@ -20,7 +20,7 @@ Context.define(BorderCVar('border'))
 
 
 
-class Bdr(Flex, border=(1,'-'), border_style='dem'):
+class Bdr(Text, border=(1,'-'), border_style='dem'):
 
     special = {
         '\\':'╲', '/':'╱', 'X':'╳',
@@ -75,12 +75,12 @@ class Bdr(Flex, border=(1,'-'), border_style='dem'):
 
     def calc_width(self):
         bdr = self['border']
-        return super().calc_width(Flex) + (bdr.width if bdr else 0)
+        return super().calc_width() + (bdr.width if bdr else 0)
 
     
     def calc_height(self):
         bdr = self['border']
-        return super().calc_height(Flex) + (bdr.height if bdr else 0)
+        return super().calc_height() + (bdr.height if bdr else 0)
 
 
     def flatten(self, w=0, h=0, **kwargs):
@@ -90,7 +90,7 @@ class Bdr(Flex, border=(1,'-'), border_style='dem'):
         bw = int(bdrw and bdr.width)
         bh = int(bdrh and bdr.height)
         child_size = (w and w-bw), (h and h-bh)
-        flat = super().flatten(w=child_size[0], h=child_size[1], **kwargs)# if self.child else []
+        flat = list(super().flatten(w=child_size[0] or super().calc_width(), h=child_size[1], **kwargs))# if self.child else []
         ascii = self['ascii']
         style = self['border_style']
         lhs = bdr.side_chars(len(flat), bdr.l[5:] if ascii else bdr.l) if bdr.sides[2] else ''

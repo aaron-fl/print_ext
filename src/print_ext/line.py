@@ -124,6 +124,12 @@ class Line(Rich, wrap=True):
         return self.__spans
 
 
+    def is_blank(self):
+        for span in self.spans:
+            if not span.is_blank(): return False
+        return True
+        
+
     def trim(self, width):
         ''' Trim this string to fit into width
 

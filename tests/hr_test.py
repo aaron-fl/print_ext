@@ -3,11 +3,10 @@ from print_ext.hr import HR
 from print_ext.line import SMark as SM
 from print_ext.flex import Flex
 from print_ext.text import Text
-from .printer_test import _printer
 from .testutil import flat, printer, styled
 
 def test_hr_hello_pretty():
-    #o, p = _printer(width=10, ascii=True)
+    #o, p = printer(width=10, ascii=True)
     hr = HR('\b2 hi', border_style='1', ascii=True)
     assert(styled(hr, w=10)[0] == ('-[ hi ]---', [SM('1',0,3), SM('2',3,5), SM('1',5,10)]))
 
@@ -21,7 +20,7 @@ def test_hr_blank():
 
 
 def test_hr_just_h():
-    o,p = _printer(width=10, ascii=True)
+    o,p = printer(width=10, ascii=True)
     p.hr('hi', just='<')
     print(o.getvalue())
     assert(o.getvalue() == '-[ hi ]---\n')

@@ -1,4 +1,4 @@
-
+from functools import reduce
 from .rich import Rich
 from .line import Line, Just, justify_v
 from .span import Span
@@ -38,13 +38,29 @@ class Text(Rich):
         return self.__lines
 
 
+    def calc_width(self):
+        return max(0,0,*map(lambda l: l.width, self.lines))
+    
+
+    def calc_height(self):
+        return reduce(lambda a,_: a+1, self.lines, 0)
+
+
     def flatten(self, w=0, h=0, **kwargs):
+        if not w and Just(self['justify'],'<').h != '<':
+            w = Text.calc_width(self) # We need to be able to right/center justify to our natural width
+        if h and h != Text.calc_height(self):
+            yield from self.flatten_with_h(w=w,h=h,**kwargs)
+        else:
+            for line in self.lines:
+                yield from line.flatten(w=w)  
+
+
+    def flatten_with_h(self, *, w, h, **kwargs):
         rows = []
         for line in self.lines:
             rows += list(line.flatten(w=w))
-        maxw = rows[0].width if len(rows) == 1 else max(*[r.width for r in rows]) if rows and w == 0 else w
-        for row in rows: row.justify(maxw)
-        yield from justify_v(rows, h, Just(self['justify'],'^'), Line(parent=self).insert(0, ' '*maxw))
+        yield from justify_v(rows, h, Just(self['justify'],'^'), Line(parent=self).insert(0, ' '*w))
 
 
     def each_child(self):

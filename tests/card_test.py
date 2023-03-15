@@ -15,7 +15,7 @@ def test_card_hello():
 
 
 def test_card_multi_title():
-    assert(flat(Card('a\vb\vc\tinner body\t')) == [
+    assert(flat(Card('a\vb\vc\tinner body')) == [
         ' │ a │        ',
         ' │ b │        ',
         '┌┤ c ├───────┐',
@@ -25,7 +25,7 @@ def test_card_multi_title():
 
 
 def test_card_empty():
-    assert(flat(Card()) == ['┌──┐', '└──┘'])
+    assert(flat(Card()) == ['┌──┐', '│  │', '└──┘'])
 
 
 def test_card_notitle():

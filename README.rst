@@ -23,8 +23,8 @@ Quick Reference
 Use
 ---
 
->>> from print_ext import print, Printer
->>> print = Printer(width=80) # This is only needed to pass doctests.  Normally just use the print from print_ext.
+>>> from print_ext import print, Flattener
+>>> print = Flattener(width=80) # This is only needed to pass doctests.  Normally just use the print from print_ext.
 >>> print('\b1 Hello', ' ', '\b2 World')
 Hello World
 

@@ -35,13 +35,13 @@ def test_pretty_beautiful():
 def test_pretty_exception():
     o,p = printer()
     try:
-        raise PrettyException(a=[1,2,3], b={'x':'hi','Hello': 'World'})
+        raise PrettyException(a=[1,2,3], b={'x':'hi','Hello': 'World'}, msg='Something wicked')
     except PrettyException as e:
         p(pretty(e))
         print(o.getvalue())
-        assert(str(e) == 'PrettyException')
-        assert(repr(e) == "PrettyException(a=[1, 2, 3], b={'x': 'hi', 'Hello': 'World'})")
-        assert(o.getvalue() == 'PrettyException\na [0] 1\n  [1] 2\n  [2] 3\nb     x hi\n  Hello World\n')
+        assert(str(e) == 'Something wicked')
+        assert(repr(e) == "PrettyException(a=[1, 2, 3], b={'x': 'hi', 'Hello': 'World'}, msg='Something wicked')")
+        assert(o.getvalue() == 'PrettyException: Something wicked\na [0] 1\n  [1] 2\n  [2] 3\nb     x hi\n  Hello World\n')
     
 
 def test_pretty_exception_no_pretty():
@@ -54,7 +54,7 @@ def test_pretty_exception_no_pretty():
     except MyException as e:
         p(pretty(e))
         print(o.getvalue())
-        assert(str(e) == "MyException(a=[1, 2, 3], b={'x': 'hi', 'Hello': 'World'})")
+        assert(str(e) == "")
         assert(repr(e) == "MyException(a=[1, 2, 3], b={'x': 'hi', 'Hello': 'World'})")
         assert(o.getvalue() == '')
 

@@ -10,14 +10,14 @@ class Card(Flex, border='-', border_style='dem'):
 
     Use a tab (\\t) to separate the title from the body.
     
-    >>> from print_ext.printer import Printer
-    >>> Printer().card('\\tHello\\nWorld!')
+    >>> from print_ext.printer import Flattener
+    >>> Flattener().card('\\tHello\\nWorld!')
     ┌────────┐
     │ Hello  │
     │ World! │
     └────────┘
     >>> card = Card('\berr$', 'Danger', '\b$ !\\t', "Don't hold plutonium\\nwith bare hands.")
-    >>> Printer(lang='en')(card) 
+    >>> Flattener(lang='en')(card) 
     ┌┤ Danger! ├───────────┐
     │ Don't hold plutonium │
     │ with bare hands.     │

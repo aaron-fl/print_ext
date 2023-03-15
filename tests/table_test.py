@@ -3,11 +3,10 @@ from functools import reduce
 from print_ext.table import Table, CellDfn
 from print_ext.fill import Fill
 from print_ext.context import Context
-from print_ext.printer import Printer
 from print_ext.line import SMark as SM
 from print_ext.borders import Bdr
 from .testutil import debug_dump
-from .printer_test import _printer
+from .testutil import printer
 
 def test_table_x():
     t = Table(3, -1, 5, tmpl='', ascii=True, wrap=False)
@@ -73,7 +72,7 @@ def test_table_styles():
 
 
 def test_table_play():  
-    o,p = _printer(color=True)  
+    o,p = printer(color=True)  
     t = Table(-1, -2, -3, tmpl='pad', ascii=True, wrap=False)
     print(t['tmpl'])
     t('A0\tA1\tA2\tB0\t\b^r$ B1\tB2\t', 'C0\t\b$ C1\tC2\t')
@@ -117,7 +116,7 @@ def test_table_CellDfn():
 
 
 def test_sudoku():
-    o,p = _printer()
+    o,p = printer()
     b = Table(1,1,1,1,1,1,1,1,1, tmpl='grid,dbl')
     b.cell('C3%3', border=('l:║#','c:╫\n\n\n#\n\n\n'))
     b.cell('R3%3', border=('t:═#','c:╪\n\n\n#\n\n\n'))

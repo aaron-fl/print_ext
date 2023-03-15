@@ -85,6 +85,8 @@ def test_empty_flattenable():
     s = Text()
     t = Text(s)
     assert(str(t) == '')
+    assert(len(list(t.flatten())) == 1)
+    assert(len(list(Text('\n').flatten())) == 2)
 
 
 @pytest.mark.skip(reason='Not Implemented')
@@ -93,3 +95,17 @@ def test_text_lang():
     assert(flat(s) == ["Danger!Don't hold plutonium", 'with bare hands.           '])
     s = Text('\berr$', 'Danger\fzh 危险', '\b$ !', "Don't hold plutonium\vwith bare hands.\fzh 不要赤\v手拿钚。", lang='zh')
     assert(flat(s) == ['危险!不要赤','手拿钚。   '])
+
+
+
+def test_text_calc_height():
+    class MyText(Text):
+        def calc_height(self):
+            return 3
+    s = MyText('aa\nbbb')
+    assert(s.height == 3)
+    assert(styled(s, h=3) == [
+        ('aa', []),
+        ('bbb', []),
+        ('', [])
+    ])
