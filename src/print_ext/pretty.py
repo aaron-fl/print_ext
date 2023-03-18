@@ -7,8 +7,11 @@ def pretty(val, _depth=0, **kwargs):
     if isinstance(val, list): return _pretty_list(val, '[]', _depth, **kwargs) if val else '[]'
     if hasattr(val, 'items'): return _pretty_dict(val, _depth, **kwargs) if val else '{}'
     if isinstance(val, str): return val
-    if hasattr(val, '__iter__'):  return _pretty_list(val, '<>', _depth, **kwargs) if val else '<>'
-    return val
+    try:
+        iter(val)
+    except TypeError:
+        return val
+    return _pretty_list(val, '<>', _depth, **kwargs) if val else '<>'
 
 
 def _pretty_list(val, paren, _depth, tmpl='', **kwargs):
