@@ -102,7 +102,7 @@ def test_rich_call_kwargs():
 def test_append_non_string():
     special_chars = SpecialChars()
     assert(str(RichTest(1,2,[3,4])) == f'1,2,{[3,4]}')
-    assert(str(RichTest(special_chars).calls[0]) == '\\x08      \\x0a \\x0b \\x0c \\x0d')
+    assert(str(RichTest(special_chars).calls[0]) == '\\x08 \\x09 \\x0a \\x0b \\x0c \\x0d')
 
 
 

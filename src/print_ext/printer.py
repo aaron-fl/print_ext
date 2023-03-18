@@ -97,8 +97,10 @@ class Printer(Context):
 
 
     def pretty(self, *args, pad=0, **kwargs):
-        return self(*(pretty(a,**kwargs) for a in args), pad=pad, **kwargs)
-
+        for arg in args:
+            self(pretty(arg,**kwargs), pad=pad, **kwargs)
+        return self
+        
 
     def calc_width(self):
         return max(0,0, *map(w.width, self._widgets))
@@ -152,9 +154,9 @@ class Flattener(Printer):
         if isatty==None:
             try:    self.isatty = self.stream.isatty()
             except: self.isatty = False
-        if 'lang' not in kwargs:
-            kwargs['lang'] = locale.getdefaultlocale()[0]
-        kwargs['lang'] = kwargs['lang'].lower()
+        #if 'lang' not in kwargs:
+        #    kwargs['lang'] = locale.getdefaultlocale()[0]
+        #kwargs['lang'] = kwargs['lang'].lower()
         if width == None:
             try:    width = os.get_terminal_size().columns-1
             except: width = INFINITY

@@ -56,3 +56,8 @@ def printer(**kwargs):
     p = Flattener(stream=o, **kwargs)
     return o,p
    
+
+def tostr(*args, **kwargs):
+    o,p = printer(**kwargs)
+    p(*args, **kwargs)
+    return o.getvalue()

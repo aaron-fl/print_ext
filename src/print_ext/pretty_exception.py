@@ -24,12 +24,12 @@ class PrettyException(Exception):
         return s+ ', '.join(args) + ')'
 
 
-    def pretty(self):
+    def __pretty__(self, **kwargs):
         p = Printer()
         if hasattr(self, 'msg'):
             p(self.msg)
         else:
             p(self.__class__.__name__)
         vars = {k:v for k,v in self.__dict__.items() if k != 'msg'}
-        if vars: p.pretty(vars, pad=-1)
+        if vars: p.pretty(vars, pad=-1, **kwargs)
         return p

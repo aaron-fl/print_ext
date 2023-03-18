@@ -192,6 +192,7 @@ class Context(metaclass=MetaContext):
         
 
     def __getitem__(self, key):
+        if not isinstance(key, str): raise IndexError()
         return self.ctx(key)
 
 

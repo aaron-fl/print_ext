@@ -125,7 +125,7 @@ def test_line_append_multiline():
 
 
 def test_line_append_tab():
-    assert(str(Line('the\tquick')) == 'the    quick')
+    assert(str(Line('the\tquick')) == 'the\\x09quick')
 
 
 

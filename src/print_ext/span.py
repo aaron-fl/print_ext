@@ -156,7 +156,7 @@ def _str_span(span):
 
 def _chr(c):
     o = ord(c)
-    if o == 9: return '    '
+    #if o == 9: return '\'
     if o < 256: return f'\\x{o:02x}'
     if o < 65536: return f'\\u{o:04x}'
     return repr(chr(o))[1:-1]
