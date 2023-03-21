@@ -1,5 +1,4 @@
-from print_ext.printer import Flattener
-from print_ext.table import Table
+from print_ext import Flattener, Table
 import cProfile, re, pstats, sys
 
 print = Flattener(color=True, width=500)

@@ -47,6 +47,3 @@ class Widget(Context, width_nom=ObjectAttr('width', None), height_nom=ObjectAttr
         #self._clear__width()
         #self._clear__height()
     
-
-    def __repr__(self):
-        return f"<{self.__class__.__name__}>"

@@ -236,7 +236,7 @@ Table.define_tmpl('sep',
     CellDfn('R0C0', border=('c:\n\n├\n\n\n|\n')),
     CellDfn('R0C-1', border=('c:\n\n\n┤\n\n\n|')),
 )
-Table.define_tmpl(' ',
+Table.define_tmpl('pad-all',
     CellDfn('ALL', cls=Bdr, border=(' ','m:1010')),
     CellDfn('R-1', border=('m:1110')),
 )

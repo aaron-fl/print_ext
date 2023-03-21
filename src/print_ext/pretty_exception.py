@@ -1,4 +1,5 @@
-from .printer import Flattener, Printer
+from .printer import Printer
+from .flattener import Flattener
 from .text import Text
 from .table import Table
 from .pretty import pretty

@@ -9,21 +9,19 @@ class Card(Flex, border='-', border_style='dem'):
     ''' Show a message in a card-like box.
 
     Use a tab (\\t) to separate the title from the body.
-    
-    >>> from print_ext.printer import Flattener
-    >>> Flattener().card('\\tHello\\nWorld!')
+
+    >>> printer().card('\\tHello\\nWorld!')
     ┌────────┐
     │ Hello  │
     │ World! │
     └────────┘
-    <Printer>
-    >>> card = Card('\berr$', 'Danger', '\b$ !\\t', "Don't hold plutonium\\nwith bare hands.")
-    >>> Flattener(lang='en')(card) 
+    <print_ext.flattener.Flattener object at 0x...
+    >>> printer().card('\berr$', 'Danger', '\b$ !\\t', "Don't hold plutonium\\nwith bare hands.")
     ┌┤ Danger! ├───────────┐
     │ Don't hold plutonium │
     │ with bare hands.     │
     └──────────────────────┘
-    <Printer>
+    <print_ext.flattener.Flattener object at 0x...
     '''
     
     def __init__(self, *args, **kwargs):

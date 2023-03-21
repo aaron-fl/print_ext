@@ -1,5 +1,5 @@
 import pytest, io
-from print_ext.printer import Flattener, stack_enum
+from print_ext.flattener import Flattener, stack_enum
 from print_ext.line import SMark as SM
 from .testutil import printer
 
@@ -20,6 +20,7 @@ def _test_printer(**kwargs):
     o = io.StringIO()
     p = PrinterTest(stream=o, **kwargs)
     return o,p
+
 
 
 def test_stack_enum():
@@ -84,14 +85,6 @@ def test_printer_default_bold():
     
 
 def test_printer_to_str():
-    from print_ext import print
-    assert(print.to_str('hello', ' \b1 world') == 'hello world\n')
-
-
-def test_legacy_print(capfd):
-    from print_ext import print
-    print.print('hello', 'world', end='x')
-    out, _ = capfd.readouterr()
-    print(out)
-    assert(out == 'hello worldx')
+    o,p = printer(color=False)
+    assert(p.to_str('hello', ' \b1 world') == 'hello world\n')
 

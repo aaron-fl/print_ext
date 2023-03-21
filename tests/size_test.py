@@ -136,5 +136,3 @@ def test_auto_params():
     assert(Size(nom=0).min == 1)
     assert(Size(nom=5, max=2).min == 2)
 
-if __name__=='__main__':
-    test_overflow()
