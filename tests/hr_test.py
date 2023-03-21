@@ -20,7 +20,7 @@ def test_hr_blank():
 
 
 def test_hr_just_h():
-    o,p = printer(width=10, ascii=True)
+    o,p = printer(width_max=10, ascii=True)
     p.hr('hi', just='<')
     print(o.getvalue())
     assert(o.getvalue() == '-[ hi ]---\n')

@@ -1,5 +1,5 @@
 from .printer import Printer
-from .flattener import Flattener
+from .stream_printer import StringPrinter
 from .text import Text
 from .table import Table
 from .pretty import pretty
@@ -15,8 +15,9 @@ class PrettyException(Exception):
 
 
     def __str__(self):
-        w = self.msg if hasattr(self, 'msg') else pretty(self)
-        return Flattener(ascii=True, color=False).to_str(w).rstrip()
+        p = StringPrinter(ascii=True, color=False)
+        p(self.msg if hasattr(self, 'msg') else pretty(self))
+        return p.stream.getvalue().rstrip()
 
 
     def __repr__(self):

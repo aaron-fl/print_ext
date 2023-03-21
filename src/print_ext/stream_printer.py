@@ -27,7 +27,7 @@ def stack_enum(txt, stack):
 
 
 
-class Flattener(Printer):
+class StreamPrinter(Printer):
     ''' This is an object for aliasing the print function.
     '''
     default_styles = {
@@ -40,25 +40,36 @@ class Flattener(Printer):
         '3' : 'c,',
     }
 
-    def __init__(self, *, stream=None, color=None, width=None, isatty=None, styles=default_styles, **kwargs):
+    def __new__(self, oneway=False, **kwargs):        
+        if self == StreamPrinter:
+            stream = kwargs.get('stream', sys.stdout)
+            try:
+                if not stream.isatty(): raise AttributeError()
+                cls = TTYPrinter
+            except AttributeError:
+                cls = OnewayIOPrinter if not stream.seekable() or oneway else StringPrinter
+        else: # Direct creation of subclass
+            cls, stream = self, kwargs.get('stream', None)
+        obj = super().__new__(cls)
+        obj.stream = stream
+        return obj
+
+
+    def __init__(self, *args, styles=default_styles, **kwargs):
         self.styles = styles
-        self.stream = stream or sys.stdout
-        kwargs = {k:v for k,v in kwargs.items() if v != None}
-        if isatty==None:
-            try:    self.isatty = self.stream.isatty()
-            except: self.isatty = False
+        #kwargs = {k:v for k,v in kwargs.items() if v != None}
+        if 'width_max' not in kwargs:
+            try:    kwargs['width_max'] = os.get_terminal_size().columns-1
+            except: kwargs['width_max'] = INFINITY
+        if 'ascii' not in kwargs:
+            kwargs['ascii'] = (locale.getdefaultlocale()[1].lower() != 'utf-8')
         #if 'lang' not in kwargs:
         #    kwargs['lang'] = locale.getdefaultlocale()[0]
         #kwargs['lang'] = kwargs['lang'].lower()
-        if width == None:
-            try:    width = os.get_terminal_size().columns-1
-            except: width = INFINITY
-        kwargs['width_max'] = width
-        if 'ascii' not in kwargs:
-            kwargs['ascii'] = (locale.getdefaultlocale()[1].lower() != 'utf-8')
-        self.color = self.isatty if color == None else color
         super().__init__(**kwargs)
         self.blank = 0
+        self._mark = 0
+        self.marks = []
 
 
     def format_out(self, txt, styles):
@@ -83,17 +94,60 @@ class Flattener(Printer):
         for line in self.flatten(blank=self.blank):
             self.stream.write(self.format_out(*line.styled()))
             self.stream.write('\n')
+            self._mark_update()
         self._widgets = []
+    
+
+    def mark(self):
+        self.marks.append(self._mark)
 
 
-    def progress(self, *args, **kwargs):
-        return Progress(*args, parent=self, **kwargs)
+    def _mark_update(self):
+        return
+
+
+    def rewind(self):
+        if not self.marks: return
+        self.marks.pop()
+
+
+
+
+class TTYPrinter(StreamPrinter):
+    def __init__(self, *, color=None, **kwargs):
+        self.color = (color == None) or color
+        super().__init__(**kwargs)
+
+
+    def _mark_update(self):
+        self._mark += 1
+
+
+    def rewind(self):
+        if not self.marks: return
+        mark = self.marks.pop()
+        delta = self._mark - mark
+        self.stream.write(f'\033[{delta}F\033[0J')
+        self._mark = mark
         
 
-    def to_str(self, *args, **kwargs):
-        saved = self.stream
-        self.stream = io.StringIO()
-        self(*args, **kwargs)
-        val = self.stream.getvalue()
-        self.stream = saved
-        return val
+
+class StringPrinter(StreamPrinter):
+    def __init__(self, *, color=None, **kwargs):
+        if self.stream == None: self.stream = io.StringIO()
+        self.color = (color != None) and color
+        super().__init__(**kwargs)
+
+
+    def _mark_update(self):
+        self._mark = self.stream.tell()
+
+
+    def rewind(self):
+        if not self.marks: return
+        self.stream.seek(self.marks.pop())
+        self.stream.truncate()
+
+
+
+class OnewayPrinter(StringPrinter): pass

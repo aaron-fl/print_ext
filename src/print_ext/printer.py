@@ -32,7 +32,7 @@ class Printer(Context):
         mute = self.q(local_tag)
         rval = PrinterProxy(self, tag, mute) if proxy or (proxy==None and tag) else self
         if not widget or mute: return rval
-        widget = widget.ctx_parent(self)
+        #widget = widget.ctx_parent(self)
         tb = traceback.extract_stack(limit=3+stack_offset)[0]
         local_tag['loc'] = (os.path.relpath(tb.filename), tb.lineno)
         if pad:

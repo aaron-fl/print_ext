@@ -1,10 +1,10 @@
 import pytest, io
-from print_ext.flattener import Flattener, stack_enum
+from print_ext.stream_printer import StreamPrinter, StringPrinter, stack_enum
 from print_ext.line import SMark as SM
 from .testutil import printer
 
 
-class PrinterTest(Flattener):
+class PrinterTest(StreamPrinter):
     def format_out(self, txt, styles):
         print(f'format_out "{txt}"  styles:{styles}')
         stripped = txt.rstrip()
@@ -42,6 +42,7 @@ def test_stack_enum():
 
 def test_print_call():
     o,p = _test_printer()
+    print(f"{p}")# {p.children}")
     p('x','y','\b3 z     ')
     assert(o.getvalue() == 'xy_z3\n')
 
@@ -85,6 +86,7 @@ def test_printer_default_bold():
     
 
 def test_printer_to_str():
-    o,p = printer(color=False)
-    assert(p.to_str('hello', ' \b1 world') == 'hello world\n')
+    p = StringPrinter()
+    p('hello', ' \b1 world')
+    assert(p.stream.getvalue() == 'hello world\n')
 

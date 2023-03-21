@@ -51,9 +51,9 @@ def styled(widget, **kwargs):
 
 
 def printer(**kwargs):
-    from print_ext import Flattener
+    from print_ext import StreamPrinter
     o = io.StringIO()
-    p = Flattener(stream=o, **kwargs)
+    p = StreamPrinter(stream=o, **kwargs)
     return o,p
    
 
