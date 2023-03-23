@@ -1,6 +1,6 @@
 from functools import reduce
 from .rich import Rich
-from .line import Line, Just, justify_v
+from .line import Line, Just
 from .span import Span
 
 
@@ -39,28 +39,27 @@ class Text(Rich):
 
 
     def calc_width(self):
-        return max(0,0,*map(lambda l: l.width, self.lines))
+        return reduce(lambda a, l: max(a,l.width), self.lines, 0)
     
 
     def calc_height(self):
-        return reduce(lambda a,_: a+1, self.lines, 0)
+        return len(self.lines)#reduce(lambda a,_: a+1, self.lines, 0)
 
 
     def flatten(self, w=0, h=0, **kwargs):
-        if not w and Just(self['justify'],'<').h != '<':
-            w = Text.calc_width(self) # We need to be able to right/center justify to our natural width
-        if h and h != Text.calc_height(self):
-            yield from self.flatten_with_h(w=w,h=h,**kwargs)
-        else:
+        justify = self['justify']
+        my_w = w if (w!=0 or Just(justify,'<').h == '<') else Text.calc_width(self)
+        if h:
+            if w==0: # h == len(lines)  
+                lines = (list(line.flatten(w=my_w))[0] for line in self.lines)
+                my_h = Text.calc_height(self)
+            else: # We have an unknown height
+                lines = reduce(lambda a, line: a + list(line.flatten(w=my_w)), self.lines, [])
+                my_h = len(lines)
+            yield from Just.lines(self, lines, my_h, my_w, h, Just(justify,'^'))
+        else: # h == 0
             for line in self.lines:
-                yield from line.flatten(w=w)  
-
-
-    def flatten_with_h(self, *, w, h, **kwargs):
-        rows = []
-        for line in self.lines:
-            rows += list(line.flatten(w=w))
-        yield from justify_v(rows, h, Just(self['justify'],'^'), Line(parent=self).insert(0, ' '*w))
+                yield from line.flatten(w=my_w)    
 
 
     def each_child(self):

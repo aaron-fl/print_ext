@@ -49,15 +49,9 @@ def flat(widget, **kwargs):
 def styled(widget, **kwargs):
     return [r.styled() for r in widget.flatten(**kwargs)]
 
-
-def printer(**kwargs):
-    from print_ext import StreamPrinter
-    o = io.StringIO()
-    p = StreamPrinter(stream=o, **kwargs)
-    return o,p
    
-
 def tostr(*args, **kwargs):
-    o,p = printer(**kwargs)
+    from print_ext.printer import StringPrinter
+    p = StringPrinter(**kwargs)
     p(*args, **kwargs)
-    return o.getvalue()
+    return str(p)

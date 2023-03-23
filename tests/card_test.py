@@ -2,7 +2,7 @@ import pytest
 from print_ext.card import Card
 from print_ext.line import SMark as SM
 from print_ext.flex import Flex
-from .testutil import flat, printer, styled
+from .testutil import flat, styled
 
 
 def test_card_hello():
@@ -47,12 +47,7 @@ def test_card_clone():
 def test_border_hilite_bug():
     ''' Show a portion of the table while building.  The col widths may change, so use fixed col widths
     '''
-    o,p = printer(color=True)
-    p.card('\berr Error:\t', 'Some problem', border_style='y')
-    c = Card('\berr Error:\t', 'Some problem')
-    
-    print(o.getvalue())
-    print(repr(o.getvalue()))
+    c = Card('\berr Error:\t', 'Some problem')    
     assert(styled(c) == [
         ('┌┤ Error: ├────┐', [SM('dem',0,3), SM('err',3,9), SM('dem',9,16)]),
         ('│ Some problem │', [SM('dem',0,2), SM('dem',14,16)]),

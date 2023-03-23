@@ -1,4 +1,5 @@
-from print_ext import StreamPrinter, Table
+from print_ext.printer import StreamPrinter
+from print_ext import Table
 import cProfile, re, pstats, sys
 
 print = StreamPrinter(color=True, width=500)

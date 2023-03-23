@@ -1,8 +1,6 @@
-from .printer import Printer
-from .stream_printer import StringPrinter
+from .printer import StringPrinter
 from .text import Text
 from .table import Table
-from .pretty import pretty
 
 
 class PrettyException(Exception):
@@ -15,9 +13,12 @@ class PrettyException(Exception):
 
 
     def __str__(self):
-        p = StringPrinter(ascii=True, color=False)
-        p(self.msg if hasattr(self, 'msg') else pretty(self))
-        return p.stream.getvalue().rstrip()
+        print = StringPrinter(ascii=True, color=False)
+        if hasattr(self, 'msg'):
+            print(self.msg)
+        else:
+            print(repr(self))
+        return str(print).rstrip()
 
 
     def __repr__(self):
@@ -26,12 +27,10 @@ class PrettyException(Exception):
         return s+ ', '.join(args) + ')'
 
 
-    def __pretty__(self, **kwargs):
-        p = Printer()
+    def __pretty__(self, print, **kwargs):
         if hasattr(self, 'msg'):
-            p(self.msg)
+            print(self.msg)
         else:
-            p(self.__class__.__name__)
+            print(self.__class__.__name__)
         vars = {k:v for k,v in self.__dict__.items() if k != 'msg'}
-        if vars: p.pretty(vars, pad=-1, **kwargs)
-        return p
+        if vars: print.pretty(vars, pad=-1, **kwargs)

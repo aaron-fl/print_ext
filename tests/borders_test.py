@@ -1,8 +1,7 @@
 import pytest
-from print_ext.borders import Bdr
 from print_ext.line import SMark as SM
-from print_ext.flex import Flex
-from .testutil import printer, styled
+from print_ext import Flex, StringPrinter, Bdr
+from .testutil import styled
 
 
 def test_Bdr_hi():
@@ -55,12 +54,14 @@ def test_borderdfn_fld_select():
 
 
 def test_border_pretty():
-    o,p = printer(color=False, ascii=True)
+    p = StringPrinter(ascii=True)
     f = Flex('hi\vthere\vbob')
     assert((f.width, f.height) == (5,3))
-    p(Bdr('hi\vthere\vbob', border=Bdr.dfn('-',m='01'), style='1'))
-    print(o.getvalue())
-    assert(repr(o.getvalue()) == "'|hi   |\\n|there|\\n|bob  |\\n'")
+    b = Bdr('hi\vthere\vbob', border=Bdr.dfn('-',m='01'), style='1')
+    print(b.height, b.calc_height())
+    assert(b)
+    p(b)
+    assert(str(p) == "|hi   |\n|there|\n|bob  |\n")
     
     
 

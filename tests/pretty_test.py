@@ -1,6 +1,6 @@
 import pytest
-from print_ext import pretty, PrettyException, Table, HR
-from .testutil import printer, tostr, styled
+from print_ext import pretty, PrettyException, Table, HR, StringPrinter
+from .testutil import tostr, styled
 from print_ext.line import SMark as SM
 
 
@@ -16,13 +16,14 @@ def test_pretty_HasPretty():
         def __init__(self, **kwargs):
             self.vals = kwargs
         
-        def __pretty__(self, _depth=None, depth=None, **kwargs):
-            return f"{_depth}_{depth}"
+        def __pretty__(self, print, _depth=None, depth=None, **kwargs):
+            print(f"{_depth}_{depth}")
 
     class SubPretty(HasPretty):
         pass
 
     v = tostr(pretty([HasPretty(), (SubPretty(),)]))
+    print(str(v))
     assert(v == '[0] 1_-2\n[1] (0) 2_-3\n')
 
 
@@ -39,7 +40,7 @@ def test_pretty_FalsePretty():
 def test_pretty_RaisesPretty():
     class SomeException(Exception): pass
     class RaisesPretty():
-        def __pretty__(self, **kwargs): raise SomeException()
+        def __pretty__(self, print, **kwargs): raise SomeException()
     with pytest.raises(SomeException):
         pretty(RaisesPretty())
 
@@ -73,9 +74,9 @@ def test_pretty_dict():
 
 
 def test_pretty_multiple():
-    o,p = printer()
-    p.pretty(None, 'b', 33, pad=1)
-    assert(o.getvalue() == "\nNone\n\nb\n\n33\n\n")
+    p = StringPrinter()
+    p.pretty(None, 'b', 33)
+    assert(str(p) == "None\nb\n33\n")
 
 
 
@@ -118,46 +119,44 @@ def test_pretty_exception():
             return 'MyIter'
 
 
-    o,p = printer()
+    p = StringPrinter()
     try:
         raise PrettyException(a=MyIter(), b={'x':'hi','Hello': 'World'}, msg='Something wicked')
     except PrettyException as e:
-        p(pretty(e))
-        print(o.getvalue())
+        p.pretty(e)
         assert(str(e) == 'Something wicked')
         assert(repr(e) == "PrettyException(a=MyIter, b={'x': 'hi', 'Hello': 'World'}, msg='Something wicked')")
-        assert(o.getvalue() == 'Something wicked\n\na <0> zero\n  <1> one\n  <2> two\n  <3> three\nb     x hi\n  Hello World\n')
+        assert(str(p) == 'Something wicked\na <0> zero\n  <1> one\n  <2> two\n  <3> three\nb     x hi\n  Hello World\n')
 
 
 
 def test_pretty_exception_no_pretty():
     class MyException(PrettyException):
-        def __pretty__(self, **kwargs):
-            return ''
-    o,p = printer()
+        def __pretty__(self, print, **kwargs):
+            pass
+    p = StringPrinter()
     try:
-        raise MyException(a=[1,2,3], b={'x':'hi','Hello': 'World'})
+        raise MyException(msg='hello', a=[1,2,3], b={'x':'hi','Hello': 'World'})
     except MyException as e:
-        p(pretty(e))
-        print(o.getvalue())
-        assert(str(e) == "")
-        assert(repr(e) == "MyException(a=[1, 2, 3], b={'x': 'hi', 'Hello': 'World'})")
-        assert(o.getvalue() == '')
+        p.pretty(e)#(pretty(e))
+        assert(str(e) == "hello")
+        assert(repr(e) == "MyException(msg='hello', a=[1, 2, 3], b={'x': 'hi', 'Hello': 'World'})")
+        assert(str(p) == '')
 
 
 
 def test_pretty_exception_no_style():
     class MyException(PrettyException):
-        def __pretty__(self, **kwargs):
-            return HR('\b1 hello')
-    o,p = printer(ascii=False, color=True)
+        def __pretty__(self, print, **kwargs):
+            print.hr('\b1 hello')
+    p = StringPrinter(ascii=False, color=True)
     try:
         raise MyException()
     except MyException as e:
-        p(pretty(e))
-        assert(str(e) == "-[ hello ]-")        
+        p.pretty(e)
+        assert(str(e) == "MyException()")        
         assert(repr(e) == "MyException()")
-        assert(o.getvalue() == '─┤ \x1b[33mhello\x1b[0m ├─\n')
+        assert(str(p) == '─┤ \x1b[33mhello\x1b[0m ├─\n')
 
 
 

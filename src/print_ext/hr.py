@@ -1,7 +1,7 @@
 from .borders import Bdr
 from .context import Context
 from .text import Text
-from .line import Line, Just, justify_v
+from .line import Line, Just
 from .widget import INFINITY
 
 class HR(Text, border=Bdr.dfn(l='\n\n│\n┤\n\n[\n[', r='\n\n│\n├\n\n]\n]', t='─-')):
@@ -13,6 +13,10 @@ class HR(Text, border=Bdr.dfn(l='\n\n│\n┤\n\n[\n[', r='\n\n│\n├\n\n]\n]'
             if w == 6: return 3
         return w
 
+    
+    def calc_height(self):
+        return super().calc_height() or 1
+
 
     def _flatten_empty(self, w, h, ascii, bdr, style):
         w = w or self['width_max']
@@ -21,7 +25,7 @@ class HR(Text, border=Bdr.dfn(l='\n\n│\n┤\n\n[\n[', r='\n\n│\n├\n\n]\n]'
         bar_l = bdr.t[5 if ascii else 0]
         bar_r = bdr.t[8 if ascii else 3]
         line = bar if w==1 else (bar_l+bar_r) if w==2 else (bar_l + bar*(w-2) + bar_r)
-        yield from justify_v([Line(parent=self)(line,style=style)], h, Just(self['justify'], '~'), Line(parent=self).insert(0,' '*w))
+        yield from Just.lines(self, [Line(parent=self)(line,style=style)], 1, w, h, Just(self['justify'], '~'))
         
 
     def flatten(self, w=0, h=0, **kwargs):

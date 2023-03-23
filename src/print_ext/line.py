@@ -7,6 +7,7 @@ from .context import Context, CVar, BoolCVar, IntCVar
 from .rich import Rich
 
 
+
 class Just():
     __slots__ = ('hv','h','v')
 
@@ -49,6 +50,34 @@ class Just():
 
     def __repr__(self):
         return f'Just({self.h+self.v!r})'
+
+
+    @staticmethod
+    def lines(self, lines, num_lines, w, h, just):
+        pad = h - num_lines
+        if h==0 or pad==0: # Perfect fit
+            yield from lines
+            return
+        elif pad < 0: # Too many lines
+            vbar = '|' if self['ascii'] else '⋮'
+            keep_top = ceil((h - 1)/2)
+            hide = num_lines - h + 1
+            e = Line(f"{vbar}{hide} lines{vbar}", style='dem', parent=self)
+            if w and e.width > w: e = Line(style='dem', parent=self).insert(0, f"{vbar}{hide}")
+            if w and e.width > w: e = Line(style='dem', parent=self).insert(0, f"{vbar}")
+            line_iter = iter(lines)
+            for _ in range(keep_top): yield next(line_iter)
+            yield e.justify(w, '|')
+            for _ in range(hide): next(line_iter)
+            try:
+                while True: yield next(line_iter)
+            except StopIteration: pass
+        else: # Too few lines
+            padt = just.pad_v(pad)
+            for _ in range(padt): yield Line(parent=self).insert(0, ' '*w)
+            yield from lines
+            for _ in range(pad-padt): yield Line(parent=self).insert(0, ' '*w)
+
 
 
 
@@ -152,21 +181,29 @@ class Line(Rich, wrap=True):
     
 
     def calc_height(self):
-        return int(self)
+        return 1 if self.spans else 0
 
 
     def each_child(self):
         yield from self.spans
 
 
-    def justify(self, width, justify_h=''):
+    def justify(self, w, justify):
         ''' Add padding so that we are correctly justified for the given `width`
         '''
-        if width == 0: return self
-        pad = width - self.width
-        if pad < 0: raise ValueError(f"This string width ({self.width}) is greater than the given justification width ({width})")        
-        padl = Just(justify_h, Just(self['justify'], '<')).pad_h(pad)
-        return self.insert(0, ' '*padl).insert(-1, ' '*(pad-padl))
+        if w == 0: return self
+        pad = w - self.width
+        if pad == 0: return self
+        if pad < 0:
+            lhs = self.clone().trim(w//2)
+            rhs = self.clone().trim(-((w-1)//2))
+            inter = Line(parent=self, style='dem').insert(0, ('~' if self['ascii'] else '…')*(w-lhs.width-rhs.width))
+            self.__spans = lhs.spans + [inter] + rhs.spans
+            self.changed_size()
+            return self
+        else: # Extra space
+            padl = Just(justify, '<').pad_h(pad)
+            return self.insert(0, ' '*padl).insert(-1, ' '*(pad-padl))
 
 
 
@@ -249,42 +286,39 @@ class Line(Rich, wrap=True):
         super().changed_size()
 
 
+
     def flatten(self, w=0, h=0, **kwargs):
-        if self.width - (w or 1e99) <= 0:
-            rows = [self.clone(parent=self).justify(w)]
-        else:
-            rows = self._flatten_wrap(w) if w and self['text_wrap'] else self._flatten_no_wrap(w)
-        dh = len(rows) - (h or 1e99)
-        if dh > 0: # We are overflowing vertically by dh
-            vbar = '|' if self['ascii'] else '⋮'
-            keep = len(rows) - dh - 1
-            n = str(dh+1)
-            e = Line(f"{vbar}{n} lines{vbar}", style='dem', parent=self)
-            if e.width > w: e = Line(style='dem', parent=self).insert(0, f"{vbar}{n}")
-            if e.width > w: e = Line(style='dem', parent=self).insert(0, f"{vbar}")
-            rows = rows[:keep-keep//2] + [e.justify(w, '|')] + rows[len(rows)-keep//2:]
-        yield from justify_v(rows, h, Just(self['justify'], '^'), Line(parent=self).insert(0,' '*w))
+        justify = self['justify']
+        text_wrap = self['text_wrap']
+        my_w = w if (w!=0 or Just(justify,'<').h == '<') else Line.calc_width(self)
+        if h:
+            if w==0 or not text_wrap: # known height
+                lines = [self.clone(parent=self).justify(my_w, justify)]
+                my_h = 1
+            else: # We have an unknown height
+                lines = list(self._flatten_wrap(my_w, justify))
+                my_h = len(lines)
+            yield from Just.lines(self, lines, my_h, my_w, h, Just(justify,'^'))
+        else: # h == 0
+            if text_wrap:
+                yield from self._flatten_wrap(my_w, justify)
+            else:
+                yield self.clone(parent=self).justify(my_w, justify)
 
 
-    def _flatten_no_wrap(self, w):
-        lhs = self.clone().trim(w//2)
-        rhs = self.clone().trim(-((w-1)//2))
-        inter = Line(('~' if self['ascii'] else '…')*(w-lhs.width-rhs.width), style='dem')
-        return [Line(lhs, inter, rhs, parent=self)]
-        
-
-    def _flatten_wrap(self, w):
-        cur, rows, wmf = self.clone(parent=self), [], max(self['wrap_mark_from'] or 4, 4)
+    def _flatten_wrap(self, w, justify):
+        cur = self.clone(parent=self)
+        if w==0 or w >= cur.width:
+            yield cur.justify(w, justify)
+            return
+        wmf = max(self['wrap_mark_from'] or 4, 4)
         prefix = '' if w < wmf else '\\ ' if self['ascii'] else '⤷ '
         while True:
             lhs = cur.clone(parent=self).trim(w)
             cur.trim(-(cur.width - lhs.width))  
-            rows.append(lhs.insert(-1, ' '*(w-lhs.width)))
+            yield lhs.insert(-1, ' '*(w-lhs.width))
             if not cur: break
-            l = Line(style='dem').insert(0,prefix)
-            if prefix: cur.insert(0, l)
-            
-        return rows
+            if prefix: cur.insert(0, Line(style='dem').insert(0,prefix))
 
 
     def __str__(self):
@@ -295,24 +329,8 @@ class Line(Rich, wrap=True):
         return f"Line({', '.join([repr(x) for x in self.spans])})"
         
 
-    def __bool__(self):
-        return bool(self.spans)
-
-
     def __len__(self):
         if self.__len == None:
             self.__len = reduce(lambda a,x: len(x) + a, self.spans, 0)
         return self.__len
         
-
-
-def justify_v(rows, h, j, line):
-    if not h:
-        yield from rows
-        return
-    pad = h - len(rows)
-    if pad < 0: raise ValueError(f"{len(rows)} is greater than the given justification height ({h})")
-    padt = j.pad_v(pad)
-    for _ in range(padt): yield line.clone(parent=line.parent, **line.ctx_local)
-    yield from rows
-    for _ in range(pad-padt): yield line.clone(parent=line.parent, **line.ctx_local)

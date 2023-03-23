@@ -15,13 +15,13 @@ class Card(Flex, border='-', border_style='dem'):
     │ Hello  │
     │ World! │
     └────────┘
-    <print_ext.stream_printer...
+    <print_ext...
     >>> printer().card('\berr$', 'Danger', '\b$ !\\t', "Don't hold plutonium\\nwith bare hands.")
     ┌┤ Danger! ├───────────┐
     │ Don't hold plutonium │
     │ with bare hands.     │
     └──────────────────────┘
-    <print_ext.stream_printer...
+    <print_ext...
     '''
     
     def __init__(self, *args, **kwargs):

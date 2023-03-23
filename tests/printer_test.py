@@ -1,10 +1,9 @@
 import pytest, io
-from print_ext.stream_printer import StreamPrinter, StringPrinter, stack_enum
+from print_ext.printer.stream import StreamPrinter, StringPrinter, stack_enum
 from print_ext.line import SMark as SM
-from .testutil import printer
 
 
-class PrinterTest(StreamPrinter):
+class StylePrinter(StringPrinter):
     def format_out(self, txt, styles):
         print(f'format_out "{txt}"  styles:{styles}')
         stripped = txt.rstrip()
@@ -13,13 +12,6 @@ class PrinterTest(StreamPrinter):
             s += stripped[:len(t)] + ('_' if not stk else ''.join(stk))
             stripped = stripped[len(t):]
         return s
-
-
-
-def _test_printer(**kwargs):
-    o = io.StringIO()
-    p = PrinterTest(stream=o, **kwargs)
-    return o,p
 
 
 
@@ -41,52 +33,65 @@ def test_stack_enum():
 
 
 def test_print_call():
-    o,p = _test_printer()
-    print(f"{p}")# {p.children}")
+    p = StylePrinter()
     p('x','y','\b3 z     ')
-    assert(o.getvalue() == 'xy_z3\n')
+    assert(str(p) == 'xy_z3\n')
+
 
 
 @pytest.mark.skip(reason="Not implemented")
 def test_lang():
-    o,p = _test_printer(lang='JA')
+    p = StylePrinter(lang='JA')
     p('hello\fja こんにちは')
-    assert(repr(o.getvalue()) == r"'こんにちは_\n'")
+    assert(repr(str(p)) == r"'こんにちは_\n'")
+
 
 
 def test_color():
-    o,p = _test_printer(lang='JA')
+    p = StylePrinter()
     p('\berr ERROR',' j/k')
-    assert(repr(o.getvalue()) == r"'ERRORerr j/k_\n'")
+    assert(repr(str(p)) == r"'ERRORerr j/k_\n'")
     
 
+
 def test_printer_default_styles():
-    o,p = printer(color=True)
+    p = StringPrinter(color=True)
     p('the ', '\bem-_ Quick\vbrown', ' fox')
-    print(o.getvalue())
-    assert(repr(o.getvalue()) == repr('the \x1b[1;4mQuick\x1b[0m\n\x1b[1;4mbrown\x1b[0m fox\n'))
-    o,p = printer()
+    assert(repr(str(p)) == repr('the \x1b[1;4mQuick\x1b[0m\n\x1b[1;4mbrown\x1b[0m fox\n'))
+    p = StringPrinter()
     p('the ', '\br_ Quick\vbrown', ' fox')
-    print(o.getvalue())
-    assert(repr(o.getvalue()) == repr('the Quick\nbrown fox\n'))
+    assert(repr(str(p)) == repr('the Quick\nbrown fox\n'))
+
 
 
 def test_printer_default_underscore():
-    o,p = printer(color=True)
+    p = StringPrinter(color=True)
     p('the \br_$ quick ','\b!\b;$ brown', ' fox')
-    print(o.getvalue())
-    assert(repr(o.getvalue()) == repr('the \x1b[4;31mquick \x1b[1;2mbrown\x1b[0;2;4;31m fox\x1b[0m\n'))
+    assert(repr(str(p)) == repr('the \x1b[4;31mquick \x1b[1;2mbrown\x1b[0;2;4;31m fox\x1b[0m\n'))
     
 
+
 def test_printer_default_bold():
-    o,p = printer(color=True)
+    p = StringPrinter(color=True)
     p('the ', '\b! quick',' fox')
-    print(o.getvalue())
-    assert(repr(o.getvalue()) == repr('the \x1b[1mquick\x1b[0m fox\n'))
-    
+    assert(repr(str(p)) == repr('the \x1b[1mquick\x1b[0m fox\n'))
+
+
 
 def test_printer_to_str():
     p = StringPrinter()
     p('hello', ' \b1 world')
     assert(p.stream.getvalue() == 'hello world\n')
 
+
+
+@pytest.mark.xfail()
+def test_printer_widgets():
+    raise(False)
+
+
+
+@pytest.mark.xfail()
+def test_printer_blank():
+    ''' Don't merge blank lines within a widget '''
+    raise(False)

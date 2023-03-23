@@ -1,5 +1,5 @@
+from functools import reduce
 from .context import Context, IntCVar, ObjectAttr
-
 
 INFINITY = 1000000000000
 
@@ -22,6 +22,10 @@ class Widget(Context, width_nom=ObjectAttr('width', None), height_nom=ObjectAttr
         super().__init__(*args, **kwargs)
 
 
+    def __bool__(self):
+        return bool(self.height)
+
+
     @property
     def width(self):
         return self.calc_width()
@@ -32,15 +36,13 @@ class Widget(Context, width_nom=ObjectAttr('width', None), height_nom=ObjectAttr
         return self.calc_height()
 
 
-    def calc_width(self, klass=None):
-        flat = list(klass.flatten(self) if klass else self.flatten())
-        return flat[0].width if flat else 0
+    def calc_width(self):
+        return reduce(lambda a, line: max(a, line.width), self.flatten(), 0)
 
 
     def calc_height(self, klass=None):
-        flat = list(klass.flatten(self) if klass else self.flatten())
-        return len(flat)
-
+        return reduce(lambda a, _: a+1, self.flatten(), 0)
+        
 
     def changed_size(self):
         self.__width = None

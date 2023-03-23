@@ -1,10 +1,9 @@
-import os, sys, locale, io
+import os, sys, locale
 from functools import reduce
-from .printer import Printer
-from .widget import INFINITY
-from .sgr import SGR
-from .progress import Progress
-
+from ..widget import INFINITY
+from ..sgr import SGR
+from .printer_abc import Printer
+from .rewinder import Rewinder
 
 def stack_enum(txt, stack):
     a, b = 0, 0
@@ -28,8 +27,12 @@ def stack_enum(txt, stack):
 
 
 class StreamPrinter(Printer):
-    ''' This is an object for aliasing the print function.
+    ''' The things printed to this printer are immediately flattened
+    and sent to the stream.
     '''
+
+    Rewinder = Rewinder
+
     default_styles = {
         'err' : 'r!,',
         'warn': 'y!,',
@@ -39,6 +42,7 @@ class StreamPrinter(Printer):
         '2' : 'm,',
         '3' : 'c,',
     }
+
 
     def __new__(self, oneway=False, **kwargs):        
         if self == StreamPrinter:
@@ -55,9 +59,9 @@ class StreamPrinter(Printer):
         return obj
 
 
-    def __init__(self, *args, styles=default_styles, **kwargs):
+    def __init__(self, *args, styles=default_styles, end='\n', **kwargs):
         self.styles = styles
-        #kwargs = {k:v for k,v in kwargs.items() if v != None}
+        self.end = end
         if 'width_max' not in kwargs:
             try:    kwargs['width_max'] = os.get_terminal_size().columns-1
             except: kwargs['width_max'] = INFINITY
@@ -67,9 +71,13 @@ class StreamPrinter(Printer):
         #    kwargs['lang'] = locale.getdefaultlocale()[0]
         #kwargs['lang'] = kwargs['lang'].lower()
         super().__init__(**kwargs)
-        self.blank = 0
-        self._mark = 0
-        self.marks = []
+        self.rewinders = []
+
+
+    def append(self, widget, tag):
+        for line in widget.flatten():
+            self.write_line(line)
+            self.write_end()
 
 
     def format_out(self, txt, styles):
@@ -89,65 +97,20 @@ class StreamPrinter(Printer):
         return s
 
 
-    def append(self, widget, tag):
-        super().append(widget, tag)
-        for line in self.flatten(blank=self.blank):
-            self.stream.write(self.format_out(*line.styled()))
-            self.stream.write('\n')
-            self._mark_update()
-        self._widgets = []
-    
-
-    def mark(self):
-        self.marks.append(self._mark)
+    def write_line(self, line):
+        self.stream.write(self.format_out(*line.styled()))
 
 
-    def _mark_update(self):
-        return
-
-
-    def rewind(self):
-        if not self.marks: return
-        self.marks.pop()
-
-
-
-
-class TTYPrinter(StreamPrinter):
-    def __init__(self, *, color=None, **kwargs):
-        self.color = (color == None) or color
-        super().__init__(**kwargs)
-
-
-    def _mark_update(self):
-        self._mark += 1
-
-
-    def rewind(self):
-        if not self.marks: return
-        mark = self.marks.pop()
-        delta = self._mark - mark
-        self.stream.write(f'\033[{delta}F\033[0J')
-        self._mark = mark
+    def write_end(self):
+        self.stream.write(self.end)
+        if self.end != '\n': self.stream.flush()
         
 
-
-class StringPrinter(StreamPrinter):
-    def __init__(self, *, color=None, **kwargs):
-        if self.stream == None: self.stream = io.StringIO()
-        self.color = (color != None) and color
-        super().__init__(**kwargs)
-
-
-    def _mark_update(self):
-        self._mark = self.stream.tell()
-
-
     def rewind(self):
-        if not self.marks: return
-        self.stream.seek(self.marks.pop())
-        self.stream.truncate()
+        return self.Rewinder(self)
 
 
-
-class OnewayPrinter(StringPrinter): pass
+# These are subclasses of StreamPrinter
+from .tty import TTYPrinter
+from .string import StringPrinter
+from .oneway import OnewayPrinter

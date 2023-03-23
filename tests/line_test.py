@@ -1,5 +1,5 @@
 import pytest
-from print_ext.line import Line, Just, justify_v, SMark as SM, style_cvar
+from print_ext.line import Line, Just, SMark as SM, style_cvar
 from print_ext.text import Text
 from print_ext.span import Span
 from print_ext.context import Context
@@ -132,15 +132,15 @@ def test_line_append_tab():
 def test_justify_h():
     ''' Line.justify()
     '''
-    s = Line('bob', justify=':')
-    s.justify(4)
+    s = Line('bob', ascii=True, justify=':')
+    s.justify(4, s['justify'])
     assert(str(s) == ' bob')
-    s.justify(4,justify_h='<')
+    s.justify(4,'<')
     assert(str(s) == ' bob')
-    s.justify(7,justify_h='|')
+    s.justify(7,'|')
     assert(str(s) == '  bob  ')
-    with pytest.raises(ValueError):
-        s.justify(2)
+    s.justify(6, '<')
+    assert(str(s) == '  b~  ')
     
 
 
@@ -203,8 +203,13 @@ def test_line_wrap():
     assert(_f('abcdefghij', w=3) == [('abc',[]), ('def',[]), ('ghi',[]), ('j  ',[])])
     assert(_f('abcdefghij', w=6) == [('abcdef',[]), ('\\ ghij',[SM('dem',0,2)])])
     assert(_f('abcdefghijabcdefgh', w=11, h=1) == [(' |2 lines| ',[SM('dem',0,11)])])
-    assert(_f('abcdefghijabcdefghijkl', w=11, h=2) == [('abcdefghija',[]),(' |2 lines| ',[SM('dem',0,11)])])
-    assert(_f('012345678012345601234560123456', w=9, h=3) == [('012345678',[]),('|2 lines|',[SM('dem',0,9)]),('\\ 0123456',[SM('dem',0,2)])])
+    assert(_f('abcdefghijabcdefghijkl', w=11, h=2) == [
+        ('abcdefghija',[]),
+        (' |2 lines| ',[SM('dem',0,11)])])
+    assert(_f('012345678012345601234560123456', w=9, h=3) == [
+        ('012345678',[]),
+        ('|2 lines|',[SM('dem',0,9)]),
+        ('\\ 0123456',[SM('dem',0,2)])])
     assert(_f('1111222233334444555566667777888899990000aaaa', w=4, h=1) == [('|11 ',[SM('dem',0,4)])])
     assert(_f('1111', w=1, h=1) == [('|',[SM('dem',0,1)])])
     #assert(_f('00000111112222233333', w=5, h=2, lang='ja', wmf=10) == [('00000',[]),('|3行|',[SM('dem',0,4)])])
@@ -366,16 +371,23 @@ def test_subtyles():
 
 
 def test_justify_v():
+    self = Context(ascii=True)
     rows = [Line('a'), Line('b'), Line('c'), Line('d')]
-    r = list(justify_v(rows, 4, Just('-'), Line('xxxx')))
+    r = list(Just.lines(self, rows, len(rows), 3, 0, Just('-')))
     assert('--'.join(map(str,r)) == 'a--b--c--d')
-    r = list(justify_v(rows, 6, Just('-'), Line('xxx')))
-    assert('--'.join(map(str,r)) == 'xxx--a--b--c--d--xxx')
-    with pytest.raises(ValueError):
-        list(justify_v(rows, 3, '-',Line()))
-    assert(r[0].styled() == ('xxx', []))
-    assert(r[1].styled() == ('a', []))
-    assert(r[5].styled() == ('xxx', []))
+    r = list(Just.lines(self, rows, len(rows), 3, 4, Just('-')))
+    assert('--'.join(map(str,r)) == 'a--b--c--d')
+    r = list(Just.lines(self, rows, len(rows), 3, 6, Just('-')))
+    assert('--'.join(map(str,r)) == '   --a--b--c--d--   ')
+    r = list(Just.lines(self, rows, len(rows), 0, 6, Just('-')))
+    assert('--'.join(map(str,r)) == '--a--b--c--d--')
+    r = list(Just.lines(self, rows, len(rows), 3, 3, '-'))
+    assert('--'.join(map(str,r)) == 'a--|2 --d')
+    r = list(Just.lines(self, rows, len(rows), 0, 3, '-'))
+    assert('--'.join(map(str,r)) == 'a--|2 lines|--d')
+    assert(r[0].styled() == ('a', []))
+    assert(r[1].styled() == ('|2 lines|', [SM('dem',0,9)]))
+    assert(r[2].styled() == ('d', []))
 
 
 @pytest.mark.xfail()
