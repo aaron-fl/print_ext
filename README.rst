@@ -15,11 +15,11 @@ At the same time, there is the `logging` library that performs a similar functio
 
 Furthermore, using `print()` with asynchronous tasks is almost meaningless since the output order becomes unclear.
 
-To solve those problems this library introduces the printer() function.  It has the following features:
+To solve those problems this library introduces the `Printer()`.  It has the following features:
 
 * Adds a ``tag`` keyword parameter that can assign a dictionary of tags to the printed object.  This can be used to filter what gets displayed, eliminating the need to use the `logging` API.  
 * Uses `contextvars` to return a special `print()` instance for asynchronous tasks.  This allows the output of those tasks to be captured and displayed in a more user-friendly way.  Having a per-context print() function also allows you to change the tag-filtering on a per-call basis.
-* Uses high-level layout widgets to allow simple formatting of complex data with color.
+* Uses high-level layout widgets to allow simple formatting of complex data with color and wide characters.
 
 
 
@@ -30,7 +30,7 @@ Quick Reference
 Use
 ---
 
->>> print = printer('\b1 Hello', ' ', '\b2 World')
+>>> print = Printer('\b1 Hello', ' ', '\b2 World')
 Hello World
 >>> warn = print('Be warned', tag='warn')
 Be warned
@@ -38,7 +38,7 @@ Be warned
 of bears
 <print_ext...
 
-The printer() function can print, but also returns a `Printer` in the current context.
+The Printer() can print directly, but it also returns a `Printer` in the current context.
 Further calls with the returned `Printer` either return itself, or a proxy to itself.
 A proxy is returned when a ``tag`` is set.
 Then, the proxy `Printer` can be used to print additional messages with the same tag.
@@ -178,9 +178,26 @@ The ``tmpl`` keyword argument specifies a base-set of ``cell()`` calls.  See `Ta
 │     │              The quick │ Apples│
 │    1│               brown fox│       │
 ├─────┼────────────────────────┼───────┤
-│To…ng│jumped over the lazy dog│Bananas│
+│To⋯ng│jumped over the lazy dog│Bananas│
 └─────┴────────────────────────┴───────┘
 <print_ext...
+
+
+Progress
+--------
+
+>>> files = [f'{chr(i+65)*((i%10)+3)}.py' for i in range(26)]
+>>> with print.progress(f'Processing \bem {len(files)}\b  files') as update:
+...     for i, fname in enumerate(files):
+...         update(f'Process #{i} {fname}', tag={'progress':(i, len(files))})
+...     update("Done Processing files", tag='progress:100')
+<print_ext...
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Processing 26 files Done Processing files
+<print_ext...
+>>> print("Continue more work")
+Continue more work
+<print_ext...
+
 
 
 

@@ -2,8 +2,9 @@ import os, sys, locale
 from functools import reduce
 from ..widget import INFINITY
 from ..sgr import SGR
-from .printer_abc import Printer
+from .printer import Printer, MetaPrinter
 from .rewinder import Rewinder
+
 
 def stack_enum(txt, stack):
     a, b = 0, 0
@@ -26,12 +27,29 @@ def stack_enum(txt, stack):
 
 
 
-class StreamPrinter(Printer):
-    ''' The things printed to this printer are immediately flattened
-    and sent to the stream.
-    '''
 
-    Rewinder = Rewinder
+class MetaStreamPrinter(MetaPrinter):
+    def __call__(self, *args, **kwargs):
+        if self != StreamPrinter: return super().__call__(*args, **kwargs)
+        kwargs.setdefault('stream', sys.stdout)
+        kwargs.setdefault('ascii', locale.getdefaultlocale()[1].lower() != 'utf-8')
+        #if 'lang' not in kwargs:
+        #    kwargs['lang'] = locale.getdefaultlocale()[0]
+        #kwargs['lang'] = kwargs['lang'].lower()
+        try:
+            if not kwargs['stream'].isatty(): raise AttributeError()
+            cls = TTYPrinter
+        except AttributeError:
+            cls = OnewayIOPrinter if not kwargs['stream'].seekable() else StringPrinter
+        return MetaPrinter.__call__(cls, *args, **kwargs)
+        
+
+
+class StreamPrinter(Printer, metaclass=MetaStreamPrinter):
+    ''' This is an abstract base class for Printers that send their widgets to an `io.Stream`
+
+    Since it cannot be instantiated directly, calling `StreamPrinter(stream=...)` returns the appropriate subclass that matches the stream.  If no stream is given then `sys.stdout` is used.
+    '''
 
     default_styles = {
         'err' : 'r!,',
@@ -44,34 +62,13 @@ class StreamPrinter(Printer):
     }
 
 
-    def __new__(self, oneway=False, **kwargs):        
-        if self == StreamPrinter:
-            stream = kwargs.get('stream', sys.stdout)
-            try:
-                if not stream.isatty(): raise AttributeError()
-                cls = TTYPrinter
-            except AttributeError:
-                cls = OnewayIOPrinter if not stream.seekable() or oneway else StringPrinter
-        else: # Direct creation of subclass
-            cls, stream = self, kwargs.get('stream', None)
-        obj = super().__new__(cls)
-        obj.stream = stream
-        return obj
-
-
-    def __init__(self, *args, styles=default_styles, end='\n', **kwargs):
+    def __init__(self, *, stream, styles=default_styles, end='\n', color=False, **kwargs):
+        self.stream = stream
         self.styles = styles
+        self.color = color
         self.end = end
-        if 'width_max' not in kwargs:
-            try:    kwargs['width_max'] = os.get_terminal_size().columns-1
-            except: kwargs['width_max'] = INFINITY
-        if 'ascii' not in kwargs:
-            kwargs['ascii'] = (locale.getdefaultlocale()[1].lower() != 'utf-8')
-        #if 'lang' not in kwargs:
-        #    kwargs['lang'] = locale.getdefaultlocale()[0]
-        #kwargs['lang'] = kwargs['lang'].lower()
-        super().__init__(**kwargs)
         self.rewinders = []
+        super().__init__(**kwargs)
 
 
     def append(self, widget, tag):
@@ -79,6 +76,15 @@ class StreamPrinter(Printer):
             self.write_line(line)
             self.write_end()
 
+
+    def write_line(self, line):
+        self.stream.write(self.format_out(*line.styled()))
+
+
+    def write_end(self):
+        self.stream.write(self.end)
+        if self.end != '\n': self.stream.flush()
+        
 
     def format_out(self, txt, styles):
         stripped = txt.rstrip()
@@ -97,17 +103,13 @@ class StreamPrinter(Printer):
         return s
 
 
-    def write_line(self, line):
-        self.stream.write(self.format_out(*line.styled()))
-
-
-    def write_end(self):
-        self.stream.write(self.end)
-        if self.end != '\n': self.stream.flush()
-        
-
     def rewind(self):
         return self.Rewinder(self)
+
+
+    def clone(self):
+        raise AttributeError(f"Streams can't be cloned")
+
 
 
 # These are subclasses of StreamPrinter

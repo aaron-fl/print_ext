@@ -168,7 +168,8 @@ class Context(metaclass=MetaContext):
             # Parent may not be defined, or may not be a Context object with ctx_lookup
             val_src = None, None # This is our last ditch effort
         # If our class defines cvar then that is better than the parent's class cvar or None
-        return (self.ctx_class.get(key, None), None) or val_src
+        class_val = self.ctx_class.get(key, None)
+        return val_src if class_val == None else (class_val, None)
 
 
     def _ctx_lookup_merge(self, merge, key):

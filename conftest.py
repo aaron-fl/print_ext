@@ -6,4 +6,4 @@ def add_printer(doctest_namespace):
     def printer(*args, **kwargs):
         print = StreamPrinter(width_max=80)
         return print(*args, stack_offset=1, **kwargs)
-    doctest_namespace["printer"] = printer
+    doctest_namespace["Printer"] = printer

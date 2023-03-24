@@ -9,3 +9,9 @@ def test_printer_widget_scalars():
     assert(styled(p) == [('33', [])])
 
 
+def test_printer_widget_clone():
+    p = WidgetPrinter(width_max=10)
+    p('hi')
+    p(p)
+    assert(styled(p) == [('hi',[]), ('hi',[])])
+

@@ -1,12 +1,13 @@
-import traceback, os
+import traceback, os, contextvars
 from functools import reduce
 from ..table import Table
-from ..context import Context
+from ..context import Context, MetaContext
 from ..flex import Flex
 from ..text import Text
-from ..line import Just
+from ..line import Just, Line
 from ..hr import HR
 from ..card import Card
+from ..widget import INFINITY
 
 
 class Tag():
@@ -23,6 +24,9 @@ class Tag():
                     except ValueError: pass
             self._dict.update(kwargs)
             self.parent = None
+        elif isinstance(tag, dict):
+            self._dict.update(tag)
+            self.parent = None
         if self.parent and not isinstance(self.parent, Tag):
             raise ValueError(f"{self.parent!r} is not a `Tag`")
         
@@ -34,9 +38,24 @@ class Tag():
 
 
 
-class Printer(Context):
+class MetaPrinter(MetaContext):
+    def __call__(self, *args, **kwargs):
+        if self != Printer: return super().__call__(*args, **kwargs)
+        p = printer_var.get()
+        return p(*args, loc=1, **kwargs)
+
+
+
+class Printer(Context, metaclass=MetaPrinter, width_max=INFINITY):
+    ''' An abstract base class for Printer-like objects.
+
+    Use Printer objects as a replacement for the standard python `print()` function.
+    
+    Since this is an abstract base class.  Trying to instantiate one with ``Printer()``
+    will use the `contextvars` to return a Printer from the current context.
+    '''
+
     def __init__(self, tag=None, q=lambda t: t.get('v',0)>0, **kwargs):
-        self._widgets = []
         if isinstance(q, str): raise NotImplementedError()
         self.q = q
         self.tag = Tag(tag)
@@ -60,7 +79,7 @@ class Printer(Context):
         
 
     def append(self, widget, tag):
-        self._widgets.append((widget,tag))
+        raise NotImplementedError()
 
 
     def __call__(self, *args, tag=None, loc=0, **kwargs):
@@ -86,6 +105,20 @@ class Printer(Context):
         return print
 
 
+    def self_printer_context(self):
+        ctx = contextvars.copy_context()
+        ctx.run(lambda: printer_var.set(self))
+        return ctx
+
+
+    def progress(self, *args, **kwargs):
+        return ProgressTaskPrinter(context=self.self_printer_context(), name=Line(*args), parent=self, **kwargs)
+
+
+    def task(self, coro, **kwargs):
+        return CoroTaskPrinter(coro, context=self.self_printer_context(), parent=self, **kwargs)
+
+
     def widgets(self, *widgets, tag=None, loc=0):
         print = self._append(None, tag, loc=None)
         for widget in widgets:
@@ -95,11 +128,13 @@ class Printer(Context):
 
     def clone(self, **kwargs):
         s = self.__class__(**kwargs)
-        s._widgets = [(w.clone(parent=s, **w.ctx_local), tag) for w,tag in self._widgets]
         s.q = self.q
         s.tag = Tag(self.tag)
         return s
 
+
+    def height_visible(self):
+        return INFINITY
 
 
 
@@ -125,5 +160,10 @@ class PrinterProxy(Printer):
         return setattr(self._parent, attr, val)
 
 
+
 # pretty requires PrinterWidget which requires Printer
 from ..pretty import pretty
+from .stream import StreamPrinter
+printer_var = contextvars.ContextVar('Printer', default=StreamPrinter())
+# TaskPrinter requires printer_var
+from .task import ProgressTaskPrinter, CoroTaskPrinter

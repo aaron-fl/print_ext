@@ -143,6 +143,13 @@ def test_justify_h():
     assert(str(s) == '  b~  ')
     
 
+def test_justify_truncate():
+    for i in range(6):
+        assert(str(Line('こんにちは').justify(i+1)) == ['⋯', '⋯⋯', 'こ⋯', 'こ⋯⋯','こ⋯は','こ⋯⋯は'][i])
+        assert(str(Line('abcdefg').justify(i+1)) == ['⋯', 'a⋯', 'a⋯g', 'ab⋯g','ab⋯fg', 'abc⋯fg'][i])
+        assert(str(Line('こabcdefg').justify(i+1)) == ['⋯', '⋯g', 'こ⋯', 'こ⋯g','こa⋯g', 'こa⋯fg'][i])
+        assert(str(Line('abこdefこ').justify(i+1)) == ['⋯', 'a⋯', 'ab⋯', 'a⋯こ','ab⋯こ', 'ab⋯fこ'][i])
+
 
 def test_line_no_wrap():
     def _f(s, **kwargs):
@@ -155,8 +162,8 @@ def test_line_no_wrap():
     assert(_f('abcdefghij', w=1) == ('~',[SM('dem',0,1)]))
     assert(_f('abcdefghij', w=0) == ('abcdefghij', []))
     assert(_f('aあa', w=4) == ('aあa', []))
-    assert(_f('ああa', w=3) == ('~~a', [SM('dem',0,2)]))
-    assert(_f('ああa', w=2) == ('~~', [SM('dem',0,2)]))
+    assert(_f('ああa', w=3) == ('あ~', [SM('dem',1,2)]))
+    assert(_f('ああa', w=2) == ('~a', [SM('dem',0,1)]))
     assert(_f('test', w=3) == ('t~t', [SM('dem',1,2)]))
 
 

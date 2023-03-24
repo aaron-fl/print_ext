@@ -10,13 +10,13 @@ class Card(Flex, border='-', border_style='dem'):
 
     Use a tab (\\t) to separate the title from the body.
 
-    >>> printer().card('\\tHello\\nWorld!')
+    >>> Printer().card('\\tHello\\nWorld!')
     ┌────────┐
     │ Hello  │
     │ World! │
     └────────┘
     <print_ext...
-    >>> printer().card('\berr$', 'Danger', '\b$ !\\t', "Don't hold plutonium\\nwith bare hands.")
+    >>> Printer().card('\berr$', 'Danger', '\b$ !\\t', "Don't hold plutonium\\nwith bare hands.")
     ┌┤ Danger! ├───────────┐
     │ Don't hold plutonium │
     │ with bare hands.     │

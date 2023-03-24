@@ -5,23 +5,22 @@ from .rewinder import Rewinder
 
 class StringRewinder(Rewinder):
     def __init__(self, printer):
-        self.stream = printer.stream
-        self.pos = self.stream.tell()
         super().__init__(printer)
+        self.pos = self.printer.stream.tell()
     
 
     def __call__(self):
-        self.stream.seek(self.pos)
-        self.stream.truncate()
+        self.printer.stream.seek(self.pos)
+        self.printer.stream.truncate(self.printer.stream.tell())
 
 
 
 class StringPrinter(StreamPrinter):
     Rewinder = StringRewinder
 
-    def __init__(self, *, color=None, **kwargs):
-        if self.stream == None: self.stream = io.StringIO()
-        self.color = (color != None) and color
+    def __init__(self, **kwargs):
+        kwargs.setdefault('stream', io.StringIO())
+        kwargs.setdefault('color', False)
         super().__init__(**kwargs)
 
 

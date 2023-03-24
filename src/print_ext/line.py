@@ -188,16 +188,27 @@ class Line(Rich, wrap=True):
         yield from self.spans
 
 
-    def justify(self, w, justify):
+    def justify(self, w, justify='<'):
         ''' Add padding so that we are correctly justified for the given `width`
         '''
         if w == 0: return self
+        if w < 0: raise ValueError(f"Can't justify to negative width: {w}")
         pad = w - self.width
         if pad == 0: return self
         if pad < 0:
-            lhs = self.clone().trim(w//2)
-            rhs = self.clone().trim(-((w-1)//2))
-            inter = Line(parent=self, style='dem').insert(0, ('~' if self['ascii'] else '…')*(w-lhs.width-rhs.width))
+            best = (-1,)
+            for off in [0, 1, -1]:
+                lhs = self.clone().trim(ceil((w-1)/2) + off)
+                lhs_w = lhs.width
+                rhs = self.clone().trim(-(w-lhs_w-1))
+                rhs_w = rhs.width
+                lr_w = lhs_w + rhs_w
+                if lr_w >= w: continue
+                hur = int(len(lhs) >= len(rhs)) + int(lr_w == w-1)*5
+                if hur > best[0]: best = (hur, lr_w, lhs, rhs, lhs_w, rhs_w)
+            else:
+                _, lr_w, lhs, rhs, lhs_w, rhs_w = best
+            inter = Line(parent=self, style='dem').insert(0, ('~' if self['ascii'] else '⋯')*(w-lr_w))
             self.__spans = lhs.spans + [inter] + rhs.spans
             self.changed_size()
             return self

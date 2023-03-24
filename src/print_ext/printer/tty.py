@@ -1,6 +1,7 @@
+import os
 from .stream import StreamPrinter
 from .rewinder import Rewinder
-
+from ..widget import INFINITY
 
 class TTYRewinder(Rewinder):
     def __init__(self, printer):
@@ -21,7 +22,7 @@ class TTYRewinder(Rewinder):
         self.printer.stream.flush()
 
 
-    def _done(self):
+    def done(self):
         # Clear the tail
         self.printer.stream.write('\033[0J') 
         self.printer.rw_lines[self.offset:] = []
@@ -33,8 +34,12 @@ class TTYRewinder(Rewinder):
 class TTYPrinter(StreamPrinter):
     Rewinder = TTYRewinder
 
-    def __init__(self, *, color=None, **kwargs):
-        self.color = (color == None) or color
+    def __init__(self, **kwargs):
+        kwargs.setdefault('color', True)
+        try:
+            kwargs.setdefault('width_max', os.get_terminal_size().columns-1)
+        except OSError: # stdout has been redirected
+            pass
         self.rw_lines = []
         self.rw_i = 0
         super().__init__(**kwargs)
@@ -51,3 +56,10 @@ class TTYPrinter(StreamPrinter):
             self.stream.write(self.format_out(*line.styled()))
             self.stream.write(f'\033[0K')
         self.rw_i += 1
+
+
+    def visible_height(self):
+        try:
+            return os.get_terminal_size().lines-1
+        except OSError: # stdout has been redirected
+            return INFINITY

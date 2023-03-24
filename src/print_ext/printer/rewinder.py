@@ -10,11 +10,11 @@ class Rewinder():
         return self
 
 
-    def _done(self):
+    def done(self):
         pass
 
 
     def __exit__(self, *args):
-        self._done()
+        self.done()
         self.printer.rewinders.pop()
     

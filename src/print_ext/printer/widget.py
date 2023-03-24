@@ -1,12 +1,20 @@
 from functools import reduce
 from ..widget import Widget
 from ..line import Just
-from .printer_abc import Printer
+from .printer import Printer, Tag
 
 
 class WidgetPrinter(Widget, Printer):
     ''' A Printer that is Flatten-able
     '''
+    def __init__(self, **kwargs):
+        self._widgets = []
+        super().__init__(**kwargs)
+
+
+    def append(self, widget, tag):
+        self._widgets.append((widget, tag))
+
          
     def calc_width(self):
         return reduce(lambda a, w: max(a, w[0].width), self._widgets, 0)
@@ -26,3 +34,8 @@ class WidgetPrinter(Widget, Printer):
             for w in self._widgets:
                 yield from w[0].flatten(w=my_w)    
 
+
+    def clone(self, **kwargs):
+        s = super().clone(**kwargs)
+        s._widgets = [(w.clone(parent=s, **w.ctx_local),Tag(tag)) for w,tag in self._widgets]
+        return s

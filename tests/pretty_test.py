@@ -6,7 +6,9 @@ from print_ext.line import SMark as SM
 
 
 def test_pretty_str_bytes():
-    v = tostr(pretty(['33', b'12', u'bob', r'\\']))
+    p = pretty(['33', b'12', u'bob', r'\\'])
+    print(p._widgets)
+    v = tostr(p)
     assert(v == "[0] 33\n[1] b'12'\n[2] bob\n[3] \\\\\n")
 
 

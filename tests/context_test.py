@@ -35,6 +35,16 @@ class Dog(Animal, a=5, r='hi'):
     pass#ctx_defaults = Context.defaults(a=5)
 
 
+class Airplane(Context, z='fly'):
+    pass
+
+
+def test_ctx_parent_class():
+    bird = Airplane(parent=Animal())
+    assert(bird['z'] == 'fly')
+    assert(bird['a'] == 3)
+
+
 def test_ctx_redefine():
     with pytest.raises(ValueError):
         Context.define(IntCVar('A','a','aa'))
