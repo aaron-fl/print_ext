@@ -55,9 +55,21 @@ class Printer(Context, metaclass=MetaPrinter, width_max=INFINITY):
     will use the `contextvars` to return a Printer from the current context.
     '''
 
-    def __init__(self, tag=None, q=lambda t: t.get('v',0)>0, **kwargs):
-        if isinstance(q, str): raise NotImplementedError()
-        self.q = q
+    @staticmethod
+    def replace(printer=None, context=None, **kwargs):
+        def in_ctx():
+            p = StreamPrinter(**kwargs) if printer==None else printer
+            printer_var.set(p)
+            return p
+        if context:
+            return context.run(in_ctx)
+        else:
+            return in_ctx()
+
+
+    def __init__(self, tag=None, filter=lambda t: t.get('v', 0) <= 0, **kwargs):
+        if isinstance(filter, str): raise NotImplementedError()
+        self.filter = filter
         self.tag = Tag(tag)
         super().__init__(**kwargs)
 
@@ -72,7 +84,7 @@ class Printer(Context, metaclass=MetaPrinter, width_max=INFINITY):
             tb = traceback.extract_stack(limit=3+loc)[0]
             loc_tag = Tag(tag, loc=(os.path.relpath(tb.filename), tb.lineno))
         # Check to see if this tag is filtered
-        mute = self.q(loc_tag)
+        mute = not self.filter(loc_tag)
         if widget and not mute:
             self.append(widget, loc_tag)
         return PrinterProxy(self, tag, mute) if proxy else self
@@ -128,7 +140,7 @@ class Printer(Context, metaclass=MetaPrinter, width_max=INFINITY):
 
     def clone(self, **kwargs):
         s = self.__class__(**kwargs)
-        s.q = self.q
+        s.filter = self.filter
         s.tag = Tag(self.tag)
         return s
 

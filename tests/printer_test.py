@@ -1,4 +1,5 @@
-import pytest, io
+import pytest, io, contextvars
+from print_ext import Printer
 from print_ext.printer.stream import StreamPrinter, StringPrinter, stack_enum
 from print_ext.line import SMark as SM
 
@@ -95,3 +96,32 @@ def test_printer_widgets():
 def test_printer_blank():
     ''' Don't merge blank lines within a widget '''
     raise(False)
+
+
+
+@pytest.mark.xfail()
+def test_abc_printer_tag():
+    assert(0)
+
+
+
+def test_printer_replace():
+    p = StringPrinter()
+    def in_ctx():
+        Printer.replace(p)
+        Printer('hi')
+        assert(str(p) == 'hi\n')
+        ctx = contextvars.copy_context()
+        Printer.replace(StringPrinter(filter=lambda t: t.get('show', False)), context=ctx)
+        Printer('bye')
+        assert(str(p) == 'hi\nbye\n')
+        def sub_ctx():
+            Printer('xyz')
+            assert(str(Printer()) == '')
+            Printer('qwerty', tag='show')
+            assert(str(Printer()) == 'qwerty\n')
+        ctx.run(sub_ctx)
+        Printer('done')
+        assert(str(Printer()) == 'hi\nbye\ndone\n')
+
+    contextvars.copy_context().run(in_ctx)
