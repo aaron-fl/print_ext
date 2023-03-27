@@ -1,5 +1,5 @@
 import pytest
-from print_ext import Flex, Bdr, Fill, Text, Line, StringPrinter
+from print_ext import Flex, Bdr, Fill, Text, Line, Printer, StringIO
 from print_ext.line import SMark as SM
 from .testutil import debug_dump, styled
 
@@ -110,7 +110,7 @@ def test_flex_passthrough():
 
 
 def test_flex_with_border():
-    p = StringPrinter()
+    p = Printer.using(StringIO)()
     f = Flex('1\t', Bdr('The quick \nbrown fox'), '\t', 'x\t')
     p(f)
     assert(str(p) == '1┌──────────┐x\n │The quick │\n │brown fox │\n └──────────┘\n')

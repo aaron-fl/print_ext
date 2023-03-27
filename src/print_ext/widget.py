@@ -18,7 +18,7 @@ class Widget(Context, width_nom=ObjectAttr('width', None), height_nom=ObjectAttr
     This is an abstract base class for all things that draw to a rectangle.
     '''
 
-    def __init__(self, *args ,**kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
 

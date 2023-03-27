@@ -1,5 +1,5 @@
 import pytest
-from print_ext import pretty, PrettyException, Table, HR, StringPrinter
+from print_ext import pretty, PrettyException, Table, HR, Printer, StringIO
 from .testutil import tostr, styled
 from print_ext.line import SMark as SM
 
@@ -7,7 +7,6 @@ from print_ext.line import SMark as SM
 
 def test_pretty_str_bytes():
     p = pretty(['33', b'12', u'bob', r'\\'])
-    print(p._widgets)
     v = tostr(p)
     assert(v == "[0] 33\n[1] b'12'\n[2] bob\n[3] \\\\\n")
 
@@ -76,7 +75,7 @@ def test_pretty_dict():
 
 
 def test_pretty_multiple():
-    p = StringPrinter()
+    p = Printer.using(StringIO)()
     p.pretty(None, 'b', 33)
     assert(str(p) == "None\nb\n33\n")
 
@@ -121,7 +120,7 @@ def test_pretty_exception():
             return 'MyIter'
 
 
-    p = StringPrinter()
+    p = Printer.using(StringIO)()
     try:
         raise PrettyException(a=MyIter(), b={'x':'hi','Hello': 'World'}, msg='Something wicked')
     except PrettyException as e:
@@ -136,7 +135,7 @@ def test_pretty_exception_no_pretty():
     class MyException(PrettyException):
         def __pretty__(self, print, **kwargs):
             pass
-    p = StringPrinter()
+    p = Printer.using(StringIO)()
     try:
         raise MyException(msg='hello', a=[1,2,3], b={'x':'hi','Hello': 'World'})
     except MyException as e:
@@ -151,7 +150,7 @@ def test_pretty_exception_no_style():
     class MyException(PrettyException):
         def __pretty__(self, print, **kwargs):
             print.hr('\b1 hello')
-    p = StringPrinter(ascii=False, color=True)
+    p = Printer.using(StringIO)(ascii=False, color=True)
     try:
         raise MyException()
     except MyException as e:

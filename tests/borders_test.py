@@ -1,6 +1,6 @@
 import pytest
 from print_ext.line import SMark as SM
-from print_ext import Flex, StringPrinter, Bdr
+from print_ext import Flex, Printer, StringIO, Bdr
 from .testutil import styled
 
 
@@ -54,7 +54,7 @@ def test_borderdfn_fld_select():
 
 
 def test_border_pretty():
-    p = StringPrinter(ascii=True)
+    p = Printer.using(StringIO)(ascii=True)
     f = Flex('hi\vthere\vbob')
     assert((f.width, f.height) == (5,3))
     b = Bdr('hi\vthere\vbob', border=Bdr.dfn('-',m='01'), style='1')

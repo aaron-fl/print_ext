@@ -1,5 +1,6 @@
 import pytest,io
-from print_ext.printer.stream import TTYPrinter
+from print_ext import Printer
+from print_ext.mixins.stream import TTY
 
 @pytest.mark.xfail()
 def test_tty_printer_tag():
@@ -8,7 +9,7 @@ def test_tty_printer_tag():
 
 
 def test_tty_printer_rewind():
-    s = TTYPrinter(stream=io.StringIO())
+    s = Printer.using(TTY)(stream=io.StringIO())
     s('hello')
     try:
         with s.rewind() as rewind:

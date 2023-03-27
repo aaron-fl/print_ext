@@ -1,5 +1,5 @@
 import pytest
-from print_ext import StringPrinter
+from print_ext import Printer, StringIO
 
 
 @pytest.mark.xfail()
@@ -9,7 +9,7 @@ def test_string_printer_tag():
 
 
 def test_string_printer_rewind():
-    s = StringPrinter()
+    s = Printer.using(StringIO)()
     s('hello')
     with s.rewind() as rewind:
         s('world')
@@ -21,7 +21,7 @@ def test_string_printer_rewind():
 
 
 def test_string_printer_rewind_nested():
-    s = StringPrinter()
+    s = Printer.using(StringIO)()
     s('a')
     with s.rewind() as rewind:
         s('b')

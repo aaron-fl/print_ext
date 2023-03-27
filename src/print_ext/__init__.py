@@ -7,7 +7,7 @@ from .line import Line
 from .table import Table, CellDfn
 from .text import Text
 from . import context
+from .printer import Printer
 from .pretty_exception import PrettyException
 from .pretty import pretty
-from .printer.stream import StringPrinter
-from .printer import Printer
+from .mixins import Memory, Pickle, Tail, Flatten, TaskGroup, StringIO, Oneway, Progress

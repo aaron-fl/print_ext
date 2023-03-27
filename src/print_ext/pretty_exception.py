@@ -1,4 +1,5 @@
-from .printer import StringPrinter
+from .printer import Printer
+from .mixins import StringIO
 from .text import Text
 from .table import Table
 
@@ -13,7 +14,7 @@ class PrettyException(Exception):
 
 
     def __str__(self):
-        print = StringPrinter(ascii=True, color=False)
+        print = Printer.using(StringIO)(ascii=True, color=False)
         if hasattr(self, 'msg'):
             print(self.msg)
         else:

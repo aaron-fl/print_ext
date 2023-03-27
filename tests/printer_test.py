@@ -1,10 +1,10 @@
 import pytest, io, contextvars
-from print_ext import Printer
-from print_ext.printer.stream import StreamPrinter, StringPrinter, stack_enum
+from print_ext import Printer, StringIO
+from print_ext.mixins.stream import stack_enum
 from print_ext.line import SMark as SM
 
 
-class StylePrinter(StringPrinter):
+class StylePrinter(Printer.using(StringIO)):
     def format_out(self, txt, styles):
         print(f'format_out "{txt}"  styles:{styles}')
         stripped = txt.rstrip()
@@ -56,31 +56,31 @@ def test_color():
 
 
 def test_printer_default_styles():
-    p = StringPrinter(color=True)
+    p = Printer.using(StringIO)(color=True)
     p('the ', '\bem-_ Quick\vbrown', ' fox')
     assert(repr(str(p)) == repr('the \x1b[1;4mQuick\x1b[0m\n\x1b[1;4mbrown\x1b[0m fox\n'))
-    p = StringPrinter()
+    p = Printer.using(StringIO)()
     p('the ', '\br_ Quick\vbrown', ' fox')
     assert(repr(str(p)) == repr('the Quick\nbrown fox\n'))
 
 
 
 def test_printer_default_underscore():
-    p = StringPrinter(color=True)
+    p = Printer.using(StringIO)(color=True)
     p('the \br_$ quick ','\b!\b;$ brown', ' fox')
     assert(repr(str(p)) == repr('the \x1b[4;31mquick \x1b[1;2mbrown\x1b[0;2;4;31m fox\x1b[0m\n'))
     
 
 
 def test_printer_default_bold():
-    p = StringPrinter(color=True)
+    p = Printer.using(StringIO)(color=True)
     p('the ', '\b! quick',' fox')
     assert(repr(str(p)) == repr('the \x1b[1mquick\x1b[0m fox\n'))
 
 
 
 def test_printer_to_str():
-    p = StringPrinter()
+    p = Printer.using(StringIO)()
     p('hello', ' \b1 world')
     assert(p.stream.getvalue() == 'hello world\n')
 
@@ -106,13 +106,13 @@ def test_abc_printer_tag():
 
 
 def test_printer_replace():
-    p = StringPrinter()
+    p = Printer.using(StringIO)()
     def in_ctx():
         Printer.replace(p)
         Printer('hi')
         assert(str(p) == 'hi\n')
         ctx = contextvars.copy_context()
-        Printer.replace(StringPrinter(filter=lambda t: t.get('show', False)), context=ctx)
+        Printer.replace(Printer.using(StringIO)(filter=lambda t: t.get('show', False)), context=ctx)
         Printer('bye')
         assert(str(p) == 'hi\nbye\n')
         def sub_ctx():

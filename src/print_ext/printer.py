@@ -1,41 +1,14 @@
-import traceback, os, contextvars
+import traceback, os, sys, contextvars, locale, asyncio
 from functools import reduce
-from ..table import Table
-from ..context import Context, MetaContext
-from ..flex import Flex
-from ..text import Text
-from ..line import Just, Line
-from ..hr import HR
-from ..card import Card
-from ..widget import INFINITY
-
-
-class Tag():
-
-    def __init__(self, tag=None, **kwargs):
-        self.parent = tag
-        self._dict = kwargs
-        if isinstance(tag, str):
-            self._dict = dict((t.split(':',1)+[True])[:2] for t in tag.split(';'))
-            for k,v in self._dict.items():
-                try: self._dict[k] = int(v)
-                except ValueError:
-                    try: self._dict[k] = float(v)
-                    except ValueError: pass
-            self._dict.update(kwargs)
-            self.parent = None
-        elif isinstance(tag, dict):
-            self._dict.update(tag)
-            self.parent = None
-        if self.parent and not isinstance(self.parent, Tag):
-            raise ValueError(f"{self.parent!r} is not a `Tag`")
-        
-    
-    def get(self, key, default=None):
-        if key in self._dict: return self._dict[key]
-        if self.parent: return self.parent.get(key, default)
-        return default
-
+from .table import Table
+from .context import Context, MetaContext
+from .flex import Flex
+from .text import Text
+from .line import Just, Line
+from .hr import HR
+from .card import Card
+from .widget import INFINITY
+from .printer_util import Tag 
 
 
 class MetaPrinter(MetaContext):
@@ -55,22 +28,34 @@ class Printer(Context, metaclass=MetaPrinter, width_max=INFINITY):
     will use the `contextvars` to return a Printer from the current context.
     '''
 
+    Rewinder = None
+
+    @staticmethod
+    def using(*bases, name=None, **kwargs):
+        bases = (*bases, Printer)
+        if not name: name = ''.join(b.__name__ for b in bases)
+        return type(name, bases, {}, **kwargs)
+
+
     @staticmethod
     def replace(printer=None, context=None, **kwargs):
+        if printer == None: printer = Printer().__class__(**kwargs)
         def in_ctx():
-            p = StreamPrinter(**kwargs) if printer==None else printer
-            printer_var.set(p)
-            return p
+            printer_var.set(printer)
+            return printer
         if context:
             return context.run(in_ctx)
         else:
             return in_ctx()
 
 
-    def __init__(self, tag=None, filter=lambda t: t.get('v', 0) <= 0, **kwargs):
+    def __init__(self, *, tag=None, name=None, filter=lambda t: t.get('v', 0) <= 0, context=None, **kwargs):
         if isinstance(filter, str): raise NotImplementedError()
         self.filter = filter
+        self.name = name
+        self._context = context
         self.tag = Tag(tag)
+        self.rewinders = []
         super().__init__(**kwargs)
 
 
@@ -91,7 +76,7 @@ class Printer(Context, metaclass=MetaPrinter, width_max=INFINITY):
         
 
     def append(self, widget, tag):
-        raise NotImplementedError()
+        pass
 
 
     def __call__(self, *args, tag=None, loc=0, **kwargs):
@@ -117,18 +102,18 @@ class Printer(Context, metaclass=MetaPrinter, width_max=INFINITY):
         return print
 
 
-    def self_printer_context(self):
-        ctx = contextvars.copy_context()
+    def context(self):
+        ctx = contextvars.copy_context() if self._context == None else self._context.copy()
         ctx.run(lambda: printer_var.set(self))
         return ctx
 
 
     def progress(self, *args, **kwargs):
-        return ProgressTaskPrinter(context=self.self_printer_context(), name=Line(*args), parent=self, **kwargs)
+        return Printer.using(ProgressRewind)(context=self.context(), name=Line(*args), parent=self, **kwargs)
 
 
-    def task(self, coro, **kwargs):
-        return CoroTaskPrinter(coro, context=self.self_printer_context(), parent=self, **kwargs)
+    def task_group(self, *args, **kwargs):
+        return PrinterProgressWaiter(self, name=Line(*args), **kwargs)
 
 
     def widgets(self, *widgets, tag=None, loc=0):
@@ -148,6 +133,40 @@ class Printer(Context, metaclass=MetaPrinter, width_max=INFINITY):
     def height_visible(self):
         return INFINITY
 
+
+    def rewind(self):
+        if not self.Rewinder: raise ValueError(f"{self} is not rewindable")
+        return self.Rewinder(self)
+
+
+
+class PrinterProgressWaiter():
+    def __init__(self, printer, fps=5, **kwargs):
+        self.printer = printer
+        self.fps = fps
+        self.tg = Printer.using(TaskGroup, Progress)(context=printer.context(), parent=printer, **kwargs)
+
+
+    async def __aenter__(self):
+        return self.tg
+
+
+    async def __aexit__(self, *args):
+        if not self.printer.Rewinder:
+            await self.tg
+            return
+        with self.printer.rewind() as rewind:
+            i = 0
+            done = False
+            while not done:
+                self.printer.widgets(self.tg)
+                i += 1
+                rewind()
+                done, pending = await asyncio.wait([self.tg], timeout=1.0/self.fps)
+                if done:
+                    done = done.pop()
+                    done.result()
+            self.printer.widgets(self.tg)
 
 
 class PrinterProxy(Printer):
@@ -172,10 +191,29 @@ class PrinterProxy(Printer):
         return setattr(self._parent, attr, val)
 
 
+# Pretty requires Printer
+from .pretty import pretty
 
-# pretty requires PrinterWidget which requires Printer
-from ..pretty import pretty
-from .stream import StreamPrinter
-printer_var = contextvars.ContextVar('Printer', default=StreamPrinter())
-# TaskPrinter requires printer_var
-from .task import ProgressTaskPrinter, CoroTaskPrinter
+
+def printer_for_stream(**kwargs):
+    kwargs.setdefault('stream', sys.stdout)
+    if 'ascii' not in kwargs: kwargs['ascii'] = (locale.getdefaultlocale()[1].lower() != 'utf-8')
+    #if 'lang' not in kwargs:
+    #    kwargs['lang'] = locale.getdefaultlocale()[0]
+    #kwargs['lang'] = kwargs['lang'].lower()
+    try:
+        if not kwargs['stream'].isatty(): raise AttributeError()
+        kind = TTY
+    except AttributeError:
+        try:
+            if not kwargs['stream'].seekable(): raise AttributeError()
+            kind = StringIO
+        except AttributeError:
+            kind = Oneway
+    return Printer.using(kind)(**kwargs)
+
+from .mixins import TaskGroup, StringIO, Oneway, ProgressRewind, Progress
+from .mixins.stream import TTY
+
+printer_var = contextvars.ContextVar('Printer', default=printer_for_stream())
+

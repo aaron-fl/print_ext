@@ -190,7 +190,7 @@ Progress
 >>> with print.progress(f'Processing \bem {len(files)}\b  files') as update:
 ...     for i, fname in enumerate(files):
 ...         update(f'Process #{i} {fname}', tag={'progress':(i, len(files))})
-...     update("Done Processing files", tag='progress:100')
+...     update("Done Processing files", tag='progress:done')
 <print_ext...
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Processing 26 files Done Processing files
 <print_ext...

@@ -1,7 +1,7 @@
 
 from print_ext.hr import HR
 from print_ext.line import SMark as SM
-from print_ext import Flex, Text, StringPrinter
+from print_ext import Flex, Text, Printer, StringIO
 from .testutil import flat, styled
 
 def test_hr_hello_pretty():
@@ -21,7 +21,7 @@ def test_hr_blank():
 
 
 def test_hr_just_h():
-    p = StringPrinter(width_max=10, ascii=True)
+    p = Printer.using(StringIO)(width_max=10, ascii=True)
     p.hr('hi', just='<')
     assert(str(p) == '-[ hi ]---\n')
     h = HR('hi', just='|', ascii=True, width_max=10, style='y')
@@ -70,41 +70,41 @@ def test_hr_clone():
 
 
 def test_hr_infinity():
-    p = StringPrinter(ascii=True)
+    p = Printer.using(StringIO)(ascii=True)
     p(HR('\b1 hi'))
     assert(str(p) == '-[ hi ]-\n')
 
 
 
 def test_hr_infinity_no_title():
-    p = StringPrinter(ascii=True)
+    p = Printer.using(StringIO)(ascii=True)
     p.hr()
     assert(str(p) == '---\n')
 
 
 
 def test_hr_joins():
-    p = StringPrinter()
+    p = Printer.using(StringIO)()
     p.hr('hi', border='=')
     assert(str(p) == '═╣ hi ╠═\n')
 
 
 
 def test_hr_joins_ascii():
-    p = StringPrinter(ascii=True)
+    p = Printer.using(StringIO)(ascii=True)
     p.hr('hi', border='=')
     assert(str(p) == '=# hi #=\n')
 
 
 
 def test_hr_joins_bold():
-    p = StringPrinter()
+    p = Printer.using(StringIO)()
     p.hr('hi', border=('#', '-.rl'))
     assert(str(p) == '━┥ hi ┝━\n')
 
 
 
 def test_hr_joins_double_space():
-    p = StringPrinter()
+    p = Printer.using(StringIO)()
     p.hr('hi', border=('=', ' .rl'))
     assert(str(p) == '═  hi  ═\n')

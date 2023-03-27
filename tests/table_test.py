@@ -1,6 +1,6 @@
 import pytest, io
 from functools import reduce
-from print_ext.printer import StringPrinter
+from print_ext import Printer, StringIO
 from print_ext.table import Table, CellDfn
 from print_ext.fill import Fill
 from print_ext.context import Context
@@ -73,7 +73,7 @@ def test_table_styles():
 
 
 def test_table_play():  
-    p = StringPrinter(color=True)  
+    p = Printer.using(StringIO)(color=True)  
     t = Table(-1, -2, -3, tmpl='pad', ascii=True, wrap=False)
     print(t['tmpl'])
     t('A0\tA1\tA2\tB0\t\b^r$ B1\tB2\t', 'C0\t\b$ C1\tC2\t')
@@ -117,7 +117,7 @@ def test_table_CellDfn():
 
 
 def test_sudoku():
-    p = StringPrinter()
+    p = Printer.using(StringIO)()
     b = Table(1,1,1,1,1,1,1,1,1, tmpl='grid,dbl')
     b.cell('C3%3', border=('l:║#','c:╫\n\n\n#\n\n\n'))
     b.cell('R3%3', border=('t:═#','c:╪\n\n\n#\n\n\n'))

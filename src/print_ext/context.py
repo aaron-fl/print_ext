@@ -4,18 +4,15 @@ from .context_cvar import ctx_vars, CallableVar, ObjectAttr, CVar, IntCVar, Floa
 class MetaContext(type):
     def __new__(self, name, bases, attrs, **kwargs):
         cls = super().__new__(self, name, bases, attrs)
-        try:
-            cls.ctx_class = dict(cls.__mro__[1].ctx_class)
-            cls.ctx_class_trace = list(cls.__mro__[1].ctx_class_trace)
-        except:
-            cls.ctx_class = {}
-            cls.ctx_class_trace = []
         cvars = ctx_vars()
-        cls.ctx_class_trace.insert(0, {cvars[k]:v if isinstance(v, CallableVar) else cvars[k].canon(v) for k,v in kwargs.items()})
-        for cv,v in cls.ctx_class_trace[0].items():
-            if hasattr(cv, 'merge') and cv.names[0] in cls.ctx_class:
-                v = cv.merge(v, cls.ctx_class[cv.names[0]])
-            cls.ctx_class[cv.names[0]] = v
+        cls.ctx_kwargs = {cvars[k]:v if isinstance(v, CallableVar) else cvars[k].canon(v) for k,v in kwargs.items()}
+        cls.ctx_class = {}
+        for base in reversed(cls.__mro__):
+            if not hasattr(base, 'ctx_kwargs'): continue
+            for cv,v in base.ctx_kwargs.items():
+                if hasattr(cv, 'merge') and cv.names[0] in cls.ctx_class:
+                    v = cv.merge(v, cls.ctx_class[cv.names[0]])
+                cls.ctx_class[cv.names[0]] = v
         return cls
 
 
@@ -133,11 +130,6 @@ class Context(metaclass=MetaContext):
         el.parent = parent
         if parent!=None: parent.children.add(el)
         return el
-
-
-    def ctx_trace(self):
-        cvars = ctx_vars()
-        return [{cvars[k]:v for k,v in self.ctx_local.items()}, *self.__class__.ctx_class_trace]
 
 
     def clone(self, *args, **kwargs):

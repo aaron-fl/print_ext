@@ -65,7 +65,7 @@ def test_ctx_CallableVar():
 def test_ctx_class_merge():
     c = Cat(r='z')
     d = Dog(parent=c)
-    print_ctx_trace(d)
+    #print_ctx_trace(d)
     assert(d['r'] == ['z', 'hi','x', 3, 'x'])
 
 

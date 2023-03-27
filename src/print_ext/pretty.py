@@ -8,7 +8,7 @@ class Continue(Exception):pass
 
 
 def pretty(val, *, print=None, depth=-1, _depth=0, quote=False, **kwargs):
-    if print == None: print = WidgetPrinter()
+    if print == None: print = PrettyPrinter()
     if depth == 0: return print(val)
     if isinstance(val, bytes): return print(val)
     if isinstance(val, str): return print(val if not quote and (q:=val.strip()) and q==val else Line(repr(val)))
@@ -80,5 +80,7 @@ def _pretty_enum(val, print, paren, _depth, depth, tmpl='', **kwargs):
     return print(t)
 
 
-# WidgetPrinter -> Printer -> pretty
-from .printer.widget import WidgetPrinter
+from .printer import Printer
+from .mixins import Flatten
+from .widget import INFINITY
+PrettyPrinter = Printer.using(Flatten, name='PrettyPrinter', keep_lines=INFINITY)

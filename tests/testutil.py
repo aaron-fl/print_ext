@@ -51,7 +51,7 @@ def styled(widget, **kwargs):
 
    
 def tostr(*args, **kwargs):
-    from print_ext.printer import StringPrinter
-    p = StringPrinter(**kwargs)
+    from print_ext import Printer, StringIO
+    p = Printer.using(StringIO)(**kwargs)
     p(*args, **kwargs)
     return str(p)
