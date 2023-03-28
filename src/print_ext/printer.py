@@ -39,7 +39,10 @@ class Printer(Context, metaclass=MetaPrinter, width_max=INFINITY):
 
     @staticmethod
     def replace(printer=None, context=None, **kwargs):
-        if printer == None: printer = Printer().__class__(**kwargs)
+        if printer == None:
+            printer = Printer()
+            kwargs.setdefault('stream', printer.stream)
+            printer = printer.__class__(**kwargs)
         def in_ctx():
             printer_var.set(printer)
             return printer
@@ -144,29 +147,28 @@ class PrinterProgressWaiter():
     def __init__(self, printer, fps=5, **kwargs):
         self.printer = printer
         self.fps = fps
-        self.tg = Printer.using(TaskGroup, Progress)(context=printer.context(), parent=printer, **kwargs)
+        self.task_group = Printer.using(TaskGroup, Progress)(context=printer.context(), parent=printer, **kwargs)
 
 
     async def __aenter__(self):
-        return self.tg
+        return self.task_group
 
 
     async def __aexit__(self, *args):
         if not self.printer.Rewinder:
-            await self.tg
+            await self.task_group
             return
         with self.printer.rewind() as rewind:
-            i = 0
             done = False
             while not done:
-                self.printer.widgets(self.tg)
-                i += 1
+                self.printer.widgets(self.task_group)
                 rewind()
-                done, pending = await asyncio.wait([self.tg], timeout=1.0/self.fps)
+                done, pending = await asyncio.wait([self.task_group], timeout=1.0/self.fps)
                 if done:
                     done = done.pop()
                     done.result()
-            self.printer.widgets(self.tg)
+            self.printer.widgets(self.task_group)
+
 
 
 class PrinterProxy(Printer):

@@ -1,6 +1,6 @@
-import pytest, io, contextvars
+import pytest, io, contextvars, sys
 from print_ext import Printer, StringIO
-from print_ext.mixins.stream import stack_enum
+from print_ext.mixins.stream import stack_enum, TTY
 from print_ext.line import SMark as SM
 
 
@@ -125,3 +125,19 @@ def test_printer_replace():
         assert(str(Printer()) == 'hi\nbye\ndone\n')
 
     contextvars.copy_context().run(in_ctx)
+
+
+def test_printer_replace_missing_stream():
+    class DummyIO(io.StringIO):
+        def isatty(self):
+            return True
+    def in_ctx():
+        p = Printer.replace(filter=lambda t: t.get('v',0) <= 1)()
+        p('a')
+        p('b', tag='v:1')
+        p('c', tag='v:2')
+        assert(str(p) == 'a\nb\n')
+    
+    Printer.using(TTY)(stream=DummyIO()).context().run(in_ctx)
+    
+    
